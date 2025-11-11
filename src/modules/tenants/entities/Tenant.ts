@@ -9,6 +9,24 @@ export class Tenant {
     @Column({ name: 'name', type: 'varchar', length: 100 })
     name!: string;
 
+    @Column({ name: 'razao_social', type: 'varchar', length: 150 })
+    razaoSocial!: string;
+
+    @Column({ name: 'nome_fantasia', type: 'varchar', length: 150 })
+    nomeFantasia!: string;
+
+    @Column({ name: 'cnpj', type: 'varchar', length: 14, unique: true })
+    cnpj!: string;
+
+    @Column({ name: 'inscricao_estadual', type: 'varchar', length: 20, nullable: true })
+    inscricaoEstadual!: string | null;
+
+    @Column({ name: 'email_contato', type: 'varchar', length: 150, nullable: true })
+    emailContato!: string | null;
+
+    @Column({ name: 'telefone_contato', type: 'varchar', length: 20, nullable: true })
+    telefoneContato!: string | null;
+
     @Column({ name: 'cliente_id', type: 'int' })
     clienteId!: number;
 

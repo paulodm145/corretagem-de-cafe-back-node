@@ -3,6 +3,12 @@ import { TenantRepository } from '../repositories/TenantRepository';
 
 type CriarTenantDTO = {
   name: string;
+  razaoSocial: string;
+  nomeFantasia: string;
+  cnpj: string;
+  inscricaoEstadual?: string | null;
+  emailContato?: string | null;
+  telefoneContato?: string | null;
   clienteId: number;
   dbName: string;
   dbHost: string;
@@ -15,6 +21,24 @@ type CriarTenantDTO = {
 
 type AtualizarTenantDTO = Partial<Omit<CriarTenantDTO, 'clienteId'>> & {
   clienteId?: number;
+};
+
+type DadosTenantNormalizados = {
+  name: string;
+  razaoSocial: string;
+  nomeFantasia: string;
+  cnpj: string;
+  inscricaoEstadual: string | null;
+  emailContato: string | null;
+  telefoneContato: string | null;
+  clienteId: number;
+  dbName: string;
+  dbHost: string;
+  dbPort?: number;
+  dbUsername: string;
+  dbPassword: string;
+  dbSsl: boolean;
+  isActive: boolean;
 };
 
 export class TenantService {
@@ -53,6 +77,12 @@ export class TenantService {
     const dadosNormalizados = this.normalizarDados(dadosCompletos);
 
     tenant.name = dadosNormalizados.name;
+    tenant.razaoSocial = dadosNormalizados.razaoSocial;
+    tenant.nomeFantasia = dadosNormalizados.nomeFantasia;
+    tenant.cnpj = dadosNormalizados.cnpj;
+    tenant.inscricaoEstadual = dadosNormalizados.inscricaoEstadual;
+    tenant.emailContato = dadosNormalizados.emailContato;
+    tenant.telefoneContato = dadosNormalizados.telefoneContato;
     tenant.clienteId = dadosNormalizados.clienteId;
     tenant.dbName = dadosNormalizados.dbName;
     tenant.dbHost = dadosNormalizados.dbHost;
@@ -73,6 +103,9 @@ export class TenantService {
   private validarCamposObrigatorios(dados: Partial<CriarTenantDTO>) {
     const camposObrigatorios: Array<{ nome: string; valor: unknown }> = [
       { nome: 'name', valor: dados.name },
+      { nome: 'razaoSocial', valor: dados.razaoSocial },
+      { nome: 'nomeFantasia', valor: dados.nomeFantasia },
+      { nome: 'cnpj', valor: dados.cnpj },
       { nome: 'clienteId', valor: dados.clienteId },
       { nome: 'dbName', valor: dados.dbName },
       { nome: 'dbHost', valor: dados.dbHost },
@@ -94,12 +127,27 @@ export class TenantService {
     if (dados.dbPort !== undefined && !Number.isFinite(Number(dados.dbPort))) {
       throw new Error('Campo dbPort deve ser numérico.');
     }
+
+    this.validarFormatoCnpj(dados.cnpj);
+    this.validarEmailSeInformado(dados.emailContato);
+    this.validarTelefoneSeInformado(dados.telefoneContato);
   }
 
-  private normalizarDados(dados: CriarTenantDTO | (Tenant & AtualizarTenantDTO)): CriarTenantDTO {
+  private normalizarDados(dados: CriarTenantDTO | (Tenant & AtualizarTenantDTO)): DadosTenantNormalizados {
     const porta = dados.dbPort !== undefined ? Number(dados.dbPort) : undefined;
+    const cnpjNumerico = this.removerNaoNumericos(String(dados.cnpj));
+    const inscricaoEstadual = dados.inscricaoEstadual?.trim() || null;
+    const emailContato = dados.emailContato?.trim().toLowerCase() || null;
+    const telefoneContato = dados.telefoneContato?.trim() || null;
+
     return {
       name: dados.name.trim(),
+      razaoSocial: dados.razaoSocial.trim(),
+      nomeFantasia: dados.nomeFantasia.trim(),
+      cnpj: cnpjNumerico,
+      inscricaoEstadual,
+      emailContato,
+      telefoneContato,
       clienteId: Number(dados.clienteId),
       dbName: dados.dbName.trim(),
       dbHost: dados.dbHost.trim(),
@@ -109,5 +157,43 @@ export class TenantService {
       dbSsl: dados.dbSsl ?? false,
       isActive: dados.isActive ?? true,
     };
+  }
+
+  private validarFormatoCnpj(cnpj?: string | null) {
+    if (cnpj === undefined || cnpj === null) {
+      throw new Error('Campo cnpj é obrigatório.');
+    }
+
+    const somenteNumeros = this.removerNaoNumericos(String(cnpj));
+    if (somenteNumeros.length !== 14) {
+      throw new Error('Campo cnpj deve conter 14 dígitos.');
+    }
+  }
+
+  private validarEmailSeInformado(email?: string | null) {
+    if (!email) {
+      return;
+    }
+
+    const emailNormalizado = email.trim();
+    const formatoEmailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!formatoEmailValido.test(emailNormalizado)) {
+      throw new Error('Campo emailContato deve conter um e-mail válido.');
+    }
+  }
+
+  private validarTelefoneSeInformado(telefone?: string | null) {
+    if (!telefone) {
+      return;
+    }
+
+    const apenasNumeros = this.removerNaoNumericos(telefone);
+    if (apenasNumeros.length < 10 || apenasNumeros.length > 11) {
+      throw new Error('Campo telefoneContato deve conter entre 10 e 11 dígitos.');
+    }
+  }
+
+  private removerNaoNumericos(valor: string): string {
+    return valor.replace(/\D/g, '');
   }
 }
