@@ -15,6 +15,16 @@
 
 > As variáveis de ambiente de conexão devem estar configuradas antes da execução dos comandos que acessam banco de dados.
 
+### Variáveis de ambiente relacionadas a tenants
+
+| Variável | Descrição |
+| --- | --- |
+| `TENANT_DB_HOST` | Host utilizado para as conexões com os bancos dos tenants (padrão: mesmo host da base core). |
+| `TENANT_DB_PORT` | Porta de conexão dos bancos dos tenants (padrão: mesma porta da base core). |
+| `TENANT_DB_SSL` | Define se a conexão dos tenants utiliza SSL (`true`/`false`). |
+| `TENANT_DB_SUPER_USER` | Usuário com privilégios suficientes para criar bancos, extensões e aplicar migrações (padrão: usuário da base core). |
+| `TENANT_DB_SUPER_PASS` | Senha do usuário administrador usado na criação das estruturas dos tenants (padrão: senha da base core). |
+
 ## Endpoints
 
 Todas as rotas expostas abaixo retornam respostas em JSON. As rotas protegidas por multitenancy exigem o cabeçalho `x-tenant-token` com o token UUID do tenant ativo.
@@ -47,17 +57,15 @@ Rotas públicas destinadas ao gerenciamento de tenants na base "core".
     "inscricaoEstadual": "123456789",
     "emailContato": "contato@empresa.com",
     "telefoneContato": "11999998888",
-    "clienteId": 1,
-    "dbName": "tenant_db",
-    "dbHost": "localhost",
-    "dbPort": 5432,
-    "dbUsername": "usuario",
-    "dbPassword": "senha",
-    "dbSsl": false,
-    "isActive": true
+    "clienteId": 1
   }
   ```
-- **Observações:** `razaoSocial`, `nomeFantasia` e `cnpj` são obrigatórios. O `cnpj` deve conter 14 dígitos numéricos.
+- **Observações:**
+  - `razaoSocial`, `nomeFantasia` e `cnpj` são obrigatórios. O `cnpj` deve conter 14 dígitos numéricos.
+  - As credenciais e o nome do banco são gerados automaticamente com base no nome e no CNPJ do tenant. A senha é criada de forma
+    randômica e forte.
+  - Após a criação o sistema provisiona o banco, executa as migrações de tenant e popula as tabelas de `estados` e `cidades` com
+    os dados oficiais do IBGE.
 
 #### PUT `/tenants/{id}`
 - **Descrição:** Atualiza os dados de um tenant existente.

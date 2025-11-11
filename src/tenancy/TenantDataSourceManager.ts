@@ -2,8 +2,21 @@ import path from 'node:path';
 import { DataSource } from 'typeorm';
 import { Tenant } from '../modules/tenants/entities/Tenant';
 
-const ENTITIES_GLOB = path.join(__dirname, '..', 'modules', '**', 'entities', '*.{ts,js}');
-const MIGRATIONS_GLOB = path.join(__dirname, '..', 'database', 'migrations', '*.{ts,js}');
+export const ENTIDADES_TENANT_GLOB = path.join(
+  __dirname,
+  '..',
+  'modules',
+  '**',
+  'entities',
+  '*.{ts,js}'
+);
+export const MIGRACOES_TENANT_GLOB = path.join(
+  __dirname,
+  '..',
+  'database',
+  'migrations',
+  '*.{ts,js}'
+);
 
 class TenantDataSourceManager {
   private cache = new Map<string, DataSource>(); // key: tenant.token
@@ -28,8 +41,8 @@ class TenantDataSourceManager {
       ssl: tenant.dbSsl ? { rejectUnauthorized: false } : undefined,
       synchronize: false,
       logging: false,
-      entities: [ENTITIES_GLOB],
-      migrations: [MIGRATIONS_GLOB],
+      entities: [ENTIDADES_TENANT_GLOB],
+      migrations: [MIGRACOES_TENANT_GLOB],
     });
 
     await dataSource.initialize();
