@@ -1,0 +1,37 @@
+{
+  "name": "api-produtos",
+  "version": "1.0.0",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server.js",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js",
+    "typeorm:ds": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js -d src/config/data-source.ts",
+    "migration:create": "npm run typeorm -- migration:create",
+    "migration:generate": "npm run typeorm:ds -- migration:generate",
+    "migration:run": "npm run typeorm:ds -- migration:run",
+    "migration:revert": "npm run typeorm:ds -- migration:revert",
+    "ibge:import": "ts-node -r tsconfig-paths/register src/commands/ibge-import.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "pg": "^8.16.3",
+    "reflect-metadata": "^0.2.2",
+    "typeorm": "^0.3.26"
+  },
+  "devDependencies": {
+    "@types/express": "^5.0.3",
+    "ts-node": "^10.9.2",
+    "tsconfig-paths": "^4.2.0",
+    "tslib": "^2.8.1",
+    "tsx": "^4.20.5",
+    "typescript": "^5.9.2"
+  }
+}
