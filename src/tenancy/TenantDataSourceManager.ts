@@ -10,12 +10,18 @@ class TenantDataSourceManager {
 
   async getOrCreate(tenant: Tenant): Promise<DataSource> {
     const cached = this.cache.get(tenant.token);
-    if (cached && cached.isInitialized) return cached;
+    if (cached && cached.isInitialized) {
+      return cached;
+    }
 
-    const ds = new DataSource({
+    if (!tenant.dbHost || !tenant.dbUsername || !tenant.dbPassword || !tenant.dbName) {
+      throw new Error('Dados de conexão do tenant estão incompletos.');
+    }
+
+    const dataSource = new DataSource({
       type: 'postgres',
       host: tenant.dbHost,
-      port: tenant.dbPort,
+      port: tenant.dbPort ?? 5432,
       username: tenant.dbUsername,
       password: tenant.dbPassword,
       database: tenant.dbName,
@@ -26,18 +32,22 @@ class TenantDataSourceManager {
       migrations: [MIGRATIONS_GLOB],
     });
 
-    await ds.initialize();
+    await dataSource.initialize();
 
     // opcional: garantir migrations aplicadas no banco do tenant
-    await ds.runMigrations();
+    await dataSource.runMigrations();
 
-    this.cache.set(tenant.token, ds);
-    return ds;
+    this.cache.set(tenant.token, dataSource);
+    return dataSource;
   }
 
   async closeAll() {
     await Promise.all(
-      Array.from(this.cache.values()).map(async (ds) => ds.isInitialized && ds.destroy())
+      Array.from(this.cache.values()).map(async (dataSource) => {
+        if (dataSource.isInitialized) {
+          await dataSource.destroy();
+        }
+      })
     );
     this.cache.clear();
   }

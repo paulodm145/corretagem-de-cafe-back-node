@@ -1,6 +1,6 @@
-import { Request, Response } from "node_modules/@types/express";
-import { EstadoRepository } from "../repositories/Estadorepository";
-import { EstadoService } from "../services/EstadoService";
+import { Request, Response } from 'express';
+import { EstadoRepository } from '../repositories/Estadorepository';
+import { EstadoService } from '../services/EstadoService';
 
 const estadoRepository = new EstadoRepository();
 const service = new EstadoService(estadoRepository);

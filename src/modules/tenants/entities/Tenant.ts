@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('tenants')
 export class Tenant {
@@ -27,6 +27,9 @@ export class Tenant {
     @Column({ name: 'dbPassword', type: 'varchar', length: 100, nullable: true })
     dbPassword!: string;
 
+    @Column({ name: 'dbSsl', type: 'boolean', default: false })
+    dbSsl!: boolean;
+
     @Column({ name: 'status', type: 'boolean', default: true })
     isActive!: boolean;
 
@@ -42,7 +45,5 @@ export class Tenant {
         nullable: false,
     })
     token!: string;
-
-    dbSsl: boolean | undefined;
 
 }
