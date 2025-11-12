@@ -270,16 +270,18 @@ export class TenantService {
 
   private async criarUsuarioBanco(configuracao: ConfiguracaoBancoTenant): Promise<void> {
     const queryRunner = this.obterQueryRunnerMaster();
-    const senhaSanitizada = configuracao.dbPassword.replace(/'/g, "''");
+    const identificadorUsuario = this.escaparIdentificadorPostgres(configuracao.dbUsername);
 
     try {
       await queryRunner.query(
-        `CREATE USER "${configuracao.dbUsername}" WITH PASSWORD '${senhaSanitizada}'`
+        `CREATE ROLE ${identificadorUsuario} WITH LOGIN PASSWORD $1`,
+        [configuracao.dbPassword]
       );
     } catch (error: any) {
       if (error?.code === '42710') {
         await queryRunner.query(
-          `ALTER USER "${configuracao.dbUsername}" WITH PASSWORD '${senhaSanitizada}'`
+          `ALTER ROLE ${identificadorUsuario} WITH LOGIN PASSWORD $1`,
+          [configuracao.dbPassword]
         );
       } else {
         throw error;
@@ -291,8 +293,10 @@ export class TenantService {
 
   private async criarBaseDeDados(configuracao: ConfiguracaoBancoTenant & { dbHost: string; dbPort: number; dbSsl: boolean }): Promise<void> {
     const queryRunner = this.obterQueryRunnerMaster();
+    const nomeBancoEscapado = this.escaparIdentificadorPostgres(configuracao.dbName);
+    const usuarioEscapado = this.escaparIdentificadorPostgres(configuracao.dbUsername);
     try {
-      await queryRunner.query(`CREATE DATABASE "${configuracao.dbName}" OWNER "${configuracao.dbUsername}"`);
+      await queryRunner.query(`CREATE DATABASE ${nomeBancoEscapado} OWNER ${usuarioEscapado}`);
     } catch (error: any) {
       if (error?.code === '42P04') {
         throw new Error('Já existe um banco de dados provisionado para este identificador de tenant.');
@@ -308,6 +312,11 @@ export class TenantService {
       throw new Error('Fonte de dados principal não está inicializada.');
     }
     return MasterDataSource.createQueryRunner();
+  }
+
+  private escaparIdentificadorPostgres(identificador: string): string {
+    const semAspas = identificador.replace(/"/g, '""');
+    return `"${semAspas}"`;
   }
 
   private async prepararEstruturaTenant(tenant: Tenant, configuracao: DetalhesCompletosBanco): Promise<void> {
