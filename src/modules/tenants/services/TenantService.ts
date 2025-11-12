@@ -2,7 +2,12 @@ import path from 'node:path';
 import { DataSource, QueryRunner } from 'typeorm';
 import { MasterDataSource } from '../../../config/master-data-source';
 import { gerarSenhaSegura } from '../../../utils/gerador-senha';
-import { tenantDSManager, ENTIDADES_TENANT_GLOB, MIGRACOES_TENANT_GLOB } from '../../../tenancy/TenantDataSourceManager';
+import {
+  tenantDSManager,
+  ENTIDADES_TENANT_GLOB,
+  MIGRACOES_TENANT_GLOB,
+  TABELA_MIGRACOES_TENANT,
+} from '../../../tenancy/TenantDataSourceManager';
 import { Cidade } from '../../cidades/entities/Cidade';
 import { Estado } from '../../estados/entities/Estado';
 import { importarDadosIbgeNoDataSource } from '../../ibge/importador-ibge';
@@ -363,6 +368,7 @@ export class TenantService {
       logging: false,
       entities: [CAMINHO_ENTIDADES],
       migrations: [CAMINHO_MIGRACOES],
+      migrationsTableName: TABELA_MIGRACOES_TENANT,
     });
 
     await dataSource.initialize();

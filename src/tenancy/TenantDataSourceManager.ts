@@ -17,6 +17,7 @@ export const MIGRACOES_TENANT_GLOB = path.join(
   'migrations',
   '*.{ts,js}'
 );
+export const TABELA_MIGRACOES_TENANT = 'tenant_migrations';
 
 class TenantDataSourceManager {
   private cache = new Map<string, DataSource>(); // key: tenant.token
@@ -43,6 +44,7 @@ class TenantDataSourceManager {
       logging: false,
       entities: [ENTIDADES_TENANT_GLOB],
       migrations: [MIGRACOES_TENANT_GLOB],
+      migrationsTableName: TABELA_MIGRACOES_TENANT,
     });
 
     await dataSource.initialize();
