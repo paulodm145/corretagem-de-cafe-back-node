@@ -101,12 +101,12 @@ export class CreateTenantsTable1756645000000 implements MigrationInterface {
           {
             name: 'dbSsl',
             type: 'boolean',
-            default: 'false',
+            default: false,
           },
           {
             name: 'status',
             type: 'boolean',
-            default: 'true',
+            default: true,
           },
           {
             name: 'created_at',
