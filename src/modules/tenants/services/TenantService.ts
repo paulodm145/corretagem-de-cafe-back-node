@@ -270,11 +270,17 @@ export class TenantService {
 
   private async criarUsuarioBanco(configuracao: ConfiguracaoBancoTenant): Promise<void> {
     const queryRunner = this.obterQueryRunnerMaster();
+    const senhaSanitizada = configuracao.dbPassword.replace(/'/g, "''");
+
     try {
-      await queryRunner.query(`CREATE USER "${configuracao.dbUsername}" WITH PASSWORD $1`, [configuracao.dbPassword]);
+      await queryRunner.query(
+        `CREATE USER "${configuracao.dbUsername}" WITH PASSWORD '${senhaSanitizada}'`
+      );
     } catch (error: any) {
       if (error?.code === '42710') {
-        await queryRunner.query(`ALTER USER "${configuracao.dbUsername}" WITH PASSWORD $1`, [configuracao.dbPassword]);
+        await queryRunner.query(
+          `ALTER USER "${configuracao.dbUsername}" WITH PASSWORD '${senhaSanitizada}'`
+        );
       } else {
         throw error;
       }
