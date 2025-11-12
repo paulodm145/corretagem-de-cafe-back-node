@@ -272,16 +272,16 @@ export class TenantService {
     const queryRunner = this.obterQueryRunnerMaster();
     const identificadorUsuario = this.escaparIdentificadorPostgres(configuracao.dbUsername);
 
+    const senhaLiteral = this.escaparLiteralPostgres(configuracao.dbPassword);
+
     try {
       await queryRunner.query(
-        `CREATE ROLE ${identificadorUsuario} WITH LOGIN PASSWORD $1`,
-        [configuracao.dbPassword]
+        `CREATE ROLE ${identificadorUsuario} WITH LOGIN PASSWORD ${senhaLiteral}`
       );
     } catch (error: any) {
       if (error?.code === '42710') {
         await queryRunner.query(
-          `ALTER ROLE ${identificadorUsuario} WITH LOGIN PASSWORD $1`,
-          [configuracao.dbPassword]
+          `ALTER ROLE ${identificadorUsuario} WITH LOGIN PASSWORD ${senhaLiteral}`
         );
       } else {
         throw error;
@@ -317,6 +317,12 @@ export class TenantService {
   private escaparIdentificadorPostgres(identificador: string): string {
     const semAspas = identificador.replace(/"/g, '""');
     return `"${semAspas}"`;
+  }
+
+  private escaparLiteralPostgres(valor: string): string {
+    const comBarrasEscapadas = valor.replace(/\\/g, '\\\\');
+    const comAspasEscapadas = comBarrasEscapadas.replace(/'/g, "''");
+    return `E'${comAspasEscapadas}'`;
   }
 
   private async prepararEstruturaTenant(tenant: Tenant, configuracao: DetalhesCompletosBanco): Promise<void> {
