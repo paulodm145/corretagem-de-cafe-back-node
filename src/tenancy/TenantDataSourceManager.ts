@@ -14,7 +14,7 @@ export const MIGRACOES_TENANT_GLOB = path.join(
   __dirname,
   '..',
   'database',
-  'migrations',
+  'tenant-migrations',
   '*.{ts,js}'
 );
 export const TABELA_MIGRACOES_TENANT = 'tenant_migrations';
@@ -49,10 +49,13 @@ class TenantDataSourceManager {
 
     await dataSource.initialize();
 
-    // opcional: garantir migrations aplicadas no banco do tenant
-    await dataSource.runMigrations();
-
     this.cache.set(tenant.token, dataSource);
+    return dataSource;
+  }
+
+  async obterDataSourceComMigracoes(tenant: Tenant): Promise<DataSource> {
+    const dataSource = await this.getOrCreate(tenant);
+    await dataSource.runMigrations();
     return dataSource;
   }
 
