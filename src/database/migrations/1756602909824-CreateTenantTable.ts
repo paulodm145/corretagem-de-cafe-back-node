@@ -28,7 +28,7 @@ export class CreateTenantTable1756602909824 implements MigrationInterface {
                         name: "dbHost",
                         type: "varchar",
                         isNullable: true,
-                        default: "localhost"
+                        default: "'localhost'"
                     },
                     {
                         name: "dbPort",
