@@ -12,7 +12,8 @@
     "migration:generate": "npm run typeorm:ds -- migration:generate",
     "migration:run": "npm run typeorm:ds -- migration:run",
     "migration:revert": "npm run typeorm:ds -- migration:revert",
-    "ibge:import": "ts-node -r tsconfig-paths/register src/commands/ibge-import.ts"
+    "ibge:import": "ts-node -r tsconfig-paths/register src/commands/ibge-import.ts",
+    "tenants:migrate": "ts-node -r tsconfig-paths/register src/commands/tenant-migrate.ts"
   },
   "keywords": [],
   "author": "",

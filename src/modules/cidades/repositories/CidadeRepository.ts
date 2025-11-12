@@ -1,23 +1,21 @@
-import { Repository } from "node_modules/typeorm";
-import { AppDataSource} from "src/config/data-source";
-import { Cidade } from "../entities/Cidade";
-import { ICidadeRepository } from "./ICidadeRepository";
+import { Repository } from 'typeorm';
+import { getTenantDS } from '../../../tenancy/tenant-context';
+import { Cidade } from '../entities/Cidade';
+import { ICidadeRepository } from './ICidadeRepository';
 
 export class CidadeRepository implements ICidadeRepository {
-  private repository: Repository<Cidade>;
+  async findByUf(uf: string): Promise<Cidade[]> {
+    const siglaEstado = uf.trim().toUpperCase();
+    const repositorio = this.obterRepositorio();
 
-  constructor() {
-    this.repository = AppDataSource.getRepository(Cidade);
+    return repositorio
+      .createQueryBuilder('cidade')
+      .leftJoin('cidade.estado', 'estado')
+      .where('estado.sigla = :uf', { uf: siglaEstado })
+      .getMany();
   }
 
-  async findByUf(uf: string): Promise<Cidade[]> {
-
-    const sigla = uf.toUpperCase();
-
-    return this.repository
-      .createQueryBuilder('c')
-      .leftJoin('c.estado', 'e')
-      .where('e.sigla = :uf', { uf: sigla })
-      .getMany();
+  private obterRepositorio(): Repository<Cidade> {
+    return getTenantDS().getRepository(Cidade);
   }
 }

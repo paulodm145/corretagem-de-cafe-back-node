@@ -1,7 +1,7 @@
-import { Repository } from "node_modules/typeorm";
-import { AppDataSource} from "src/config/data-source";
-import { Estado } from "../entities/Estado";
-import { IEstadoRepository } from "./IEstadoRepository";
+import { Repository } from 'typeorm';
+import { getTenantDS } from '../../../tenancy/tenant-context';
+import { Estado } from '../entities/Estado';
+import { IEstadoRepository } from './IEstadoRepository';
 
 // DTO para lista simplificada
 export interface EstadoListaDTO {
@@ -10,13 +10,12 @@ export interface EstadoListaDTO {
 }
 
 export class EstadoRepository implements IEstadoRepository {
-  private repository: Repository<Estado>;
-
-  constructor() {
-    this.repository = AppDataSource.getRepository(Estado);
+  private obterRepositorio(): Repository<Estado> {
+    return getTenantDS().getRepository(Estado);
   }
 
   async findAll(): Promise<Estado[]> {
-   return this.repository.find();
+    const repositorio = this.obterRepositorio();
+    return repositorio.find();
   }
 }

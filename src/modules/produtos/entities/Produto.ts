@@ -5,7 +5,7 @@ export class Produto {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ type: 'varchar', length: 255 })
+  @Column({ type: 'varchar', length: 255, nullable: false })
   descricao!: string;
 
   @CreateDateColumn({ name: 'created_at' })
