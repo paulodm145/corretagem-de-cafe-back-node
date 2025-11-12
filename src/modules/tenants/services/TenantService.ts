@@ -16,8 +16,12 @@ import { TenantRepository } from '../repositories/TenantRepository';
 
 const TAMANHO_MAXIMO_IDENTIFICADOR = 63; // limite do PostgreSQL
 
-const CAMINHO_ENTIDADES = ENTIDADES_TENANT_GLOB || path.join(__dirname, '..', '..', '..', 'modules', '**', 'entities', '*.{ts,js}');
-const CAMINHO_MIGRACOES = MIGRACOES_TENANT_GLOB || path.join(__dirname, '..', '..', '..', 'database', 'migrations', '*.{ts,js}');
+const CAMINHO_ENTIDADES =
+  ENTIDADES_TENANT_GLOB ||
+  path.join(__dirname, '..', '..', '..', 'modules', '**', 'entities', '*.{ts,js}');
+const CAMINHO_MIGRACOES =
+  MIGRACOES_TENANT_GLOB ||
+  path.join(__dirname, '..', '..', '..', 'database', 'tenant-migrations', '*.{ts,js}');
 
 type CriarTenantDTO = {
   name: string;
@@ -337,7 +341,7 @@ export class TenantService {
     tenant.dbPort = configuracao.dbPort;
     tenant.dbSsl = configuracao.dbSsl;
 
-    const dataSourceTenant = await tenantDSManager.getOrCreate(tenant);
+    const dataSourceTenant = await tenantDSManager.obterDataSourceComMigracoes(tenant);
 
     await this.popularEstadosECidades(dataSourceTenant);
   }
