@@ -1,9 +1,12 @@
 import 'reflect-metadata';
+import path from 'node:path';
 import { DataSource } from 'typeorm';
 import { config } from 'dotenv';
 import { Tenant } from '../modules/tenants/entities/Tenant';
 
 config(); // lê .env
+
+const CAMINHO_MIGRACOES_CORE = path.join(__dirname, '..', 'database', 'core-migrations', '*.{ts,js}');
 
 export const MasterDataSource = new DataSource({
   type: 'postgres',
@@ -15,5 +18,6 @@ export const MasterDataSource = new DataSource({
   synchronize: false, // use migrations
   logging: false,
   entities: [Tenant],
-  migrations: [__dirname + '/../database/core-migrations/*.{ts,js}'],
+  migrations: [CAMINHO_MIGRACOES_CORE],
+  migrationsTableName: 'core_migrations',
 });
