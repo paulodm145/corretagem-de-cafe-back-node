@@ -11,7 +11,7 @@
 | `npm run migration:generate -- <nome>` | Gera uma migração com base nas alterações detectadas nas entidades. |
 | `npm run migration:run` | Executa as migrações pendentes na base core configurada. |
 | `npm run migration:revert` | Desfaz a última migração executada. |
-| `npm run ibge:import` | Executa a rotina de importação de dados do IBGE. |
+| `npm run ibge:import` | Executa a rotina de importação de dados do IBGE diretamente da API pública BrasilAPI. |
 
 > As variáveis de ambiente de conexão devem estar configuradas antes da execução dos comandos que acessam banco de dados.
 
@@ -64,8 +64,8 @@ Rotas públicas destinadas ao gerenciamento de tenants na base "core".
   - `razaoSocial`, `nomeFantasia` e `cnpj` são obrigatórios. O `cnpj` deve conter 14 dígitos numéricos.
   - As credenciais e o nome do banco são gerados automaticamente com base no nome e no CNPJ do tenant. A senha é criada de forma
     randômica e forte.
-  - Após a criação o sistema provisiona o banco, executa as migrações de tenant e popula as tabelas de `estados` e `cidades` com
-    os dados oficiais do IBGE.
+  - Após a criação o sistema provisiona o banco, executa as migrações de tenant e importa os dados de `estados` e `cidades` dire
+tamente da API oficial do IBGE.
 
 #### PUT `/tenants/{id}`
 - **Descrição:** Atualiza os dados de um tenant existente.

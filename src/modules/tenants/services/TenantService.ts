@@ -1,16 +1,15 @@
 import path from 'node:path';
 import { DataSource, QueryRunner } from 'typeorm';
 import { MasterDataSource } from '../../../config/master-data-source';
-import { estadosSeed, cidadesSeed } from '../../../database/seeds/dados-estados-cidades';
 import { gerarSenhaSegura } from '../../../utils/gerador-senha';
 import { tenantDSManager, ENTIDADES_TENANT_GLOB, MIGRACOES_TENANT_GLOB } from '../../../tenancy/TenantDataSourceManager';
 import { Cidade } from '../../cidades/entities/Cidade';
 import { Estado } from '../../estados/entities/Estado';
+import { importarDadosIbgeNoDataSource } from '../../ibge/importador-ibge';
 import { Tenant } from '../entities/Tenant';
 import { TenantRepository } from '../repositories/TenantRepository';
 
 const TAMANHO_MAXIMO_IDENTIFICADOR = 63; // limite do PostgreSQL
-const TAMANHO_LOTE_INSERCAO = 500;
 
 const CAMINHO_ENTIDADES = ENTIDADES_TENANT_GLOB || path.join(__dirname, '..', '..', '..', 'modules', '**', 'entities', '*.{ts,js}');
 const CAMINHO_MIGRACOES = MIGRACOES_TENANT_GLOB || path.join(__dirname, '..', '..', '..', 'database', 'migrations', '*.{ts,js}');
@@ -346,25 +345,13 @@ export class TenantService {
     const repositorioCidades = dataSource.getRepository(Cidade);
 
     const totalEstados = await repositorioEstados.count();
-    if (totalEstados === 0) {
-      await repositorioEstados.insert(estadosSeed.map((estado) => ({
-        id: estado.id,
-        nome: estado.nome,
-        sigla: estado.sigla,
-      })));
+    const totalCidades = await repositorioCidades.count();
+
+    if (totalEstados > 0 && totalCidades > 0) {
+      return;
     }
 
-    const totalCidades = await repositorioCidades.count();
-    if (totalCidades === 0) {
-      for (let indice = 0; indice < cidadesSeed.length; indice += TAMANHO_LOTE_INSERCAO) {
-        const lote = cidadesSeed.slice(indice, indice + TAMANHO_LOTE_INSERCAO).map((cidade) => ({
-          id: cidade.id,
-          nome: cidade.nome,
-          estadoId: cidade.estadoId,
-        }));
-        await repositorioCidades.insert(lote);
-      }
-    }
+    await importarDadosIbgeNoDataSource(dataSource);
   }
 
   private validarFormatoCnpj(cnpj?: string | null) {
