@@ -326,17 +326,25 @@ export class TenantService {
   }
 
   private async prepararEstruturaTenant(tenant: Tenant, configuracao: DetalhesCompletosBanco): Promise<void> {
-    const dataSource = await this.criarDataSourceTemporario(configuracao);
+    await this.instalarExtensoesObrigatorias(configuracao);
+
+    tenant.dbHost = configuracao.dbHost;
+    tenant.dbPort = configuracao.dbPort;
+    tenant.dbSsl = configuracao.dbSsl;
+
+    const dataSourceTenant = await tenantDSManager.getOrCreate(tenant);
+
+    await this.popularEstadosECidades(dataSourceTenant);
+  }
+
+  private async instalarExtensoesObrigatorias(configuracao: DetalhesCompletosBanco): Promise<void> {
+    const dataSourceAdministrador = await this.criarDataSourceTemporario(configuracao);
 
     try {
-      await dataSource.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
-      await dataSource.runMigrations();
-      await this.popularEstadosECidades(dataSource);
+      await dataSourceAdministrador.query('CREATE EXTENSION IF NOT EXISTS "uuid-ossp";');
     } finally {
-      await dataSource.destroy();
+      await dataSourceAdministrador.destroy();
     }
-
-    await tenantDSManager.getOrCreate(tenant);
   }
 
   private async criarDataSourceTemporario(configuracao: DetalhesCompletosBanco): Promise<DataSource> {
