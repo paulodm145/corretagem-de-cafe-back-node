@@ -86,4 +86,31 @@ Para acessar as rotas abaixo informe `x-tenant-token` com o token UUID do tenant
 - **Descrição:** Lista as cidades pertencentes à UF informada para o tenant atual.
 - **Parâmetros de rota:** `uf` (código da unidade federativa com duas letras).
 
+#### GET `/produtos`
+- **Descrição:** Lista todos os produtos cadastrados no tenant atual ordenados pela descrição.
+- **Resposta 200:** Array de objetos com `id`, `descricao`, `createdAt` e `updatedAt`.
+
+#### GET `/produtos/{id}`
+- **Descrição:** Busca um produto específico pelo identificador UUID dentro do tenant atual.
+- **Parâmetros de rota:** `id` (UUID do produto).
+
+#### POST `/produtos`
+- **Descrição:** Cria um novo produto.
+- **Corpo (JSON):**
+  ```json
+  {
+    "descricao": "Café em grãos 1kg"
+  }
+  ```
+- **Regras:** O campo `descricao` é obrigatório, deve ser uma string entre 1 e 255 caracteres.
+
+#### PUT `/produtos/{id}`
+- **Descrição:** Atualiza os dados de um produto existente.
+- **Parâmetros de rota:** `id` (UUID do produto).
+- **Corpo (JSON):** Permite alterar `descricao`, obedecendo às mesmas regras de validação do POST.
+
+#### DELETE `/produtos/{id}`
+- **Descrição:** Remove um produto do tenant atual.
+- **Resposta 204:** Sem corpo.
+
 > Sempre que um novo endpoint for adicionado à API ele deve ser documentado neste arquivo seguindo o mesmo padrão de descrição.

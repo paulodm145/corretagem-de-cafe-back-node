@@ -5,6 +5,7 @@ import { estadoRouter } from './modules/estados/routes';
 import { cidadeRouter } from './modules/cidades/routes';
 import { tenantMiddleware } from './middleware/tenant-middleware';
 import { tenantsRouter } from './modules/tenants/routes';
+import { produtoRouter } from './modules/produtos/routes';
 
 config();
 
@@ -17,6 +18,7 @@ app.use('/tenants', tenantsRouter);
 const rotasTenant = Router();
 rotasTenant.use(estadoRouter);
 rotasTenant.use(cidadeRouter);
+rotasTenant.use(produtoRouter);
 
 app.use(tenantMiddleware, rotasTenant);
 
