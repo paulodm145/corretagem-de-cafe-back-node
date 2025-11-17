@@ -54,16 +54,17 @@ Rotas públicas destinadas ao gerenciamento de tenants na base "core".
 ### Rotas autenticadas por tenant
 Para acessar os recursos de domínio:
 
-1. Informe o cabeçalho `x-tenant-token` com o token UUID do tenant.
-2. Autentique-se via `POST /auth/login` para receber um JWT.
-3. Utilize `Authorization: Bearer <token>` em todas as requisições subsequentes.
+1. Tenha em mãos o `tenantToken` (UUID) fornecido na criação do tenant.
+2. Autentique-se via `POST /auth/login`, informando o `tenantToken` diretamente no corpo (o cabeçalho `x-tenant-token` é opcional apenas para essa rota).
+3. Utilize `x-tenant-token` e `Authorization: Bearer <token>` em todas as requisições subsequentes às rotas protegidas.
 
 #### POST `/auth/login`
-- **Descrição:** Realiza a autenticação de usuários do tenant.
-- **Headers obrigatórios:** `x-tenant-token`.
+- **Descrição:** Realiza a autenticação de usuários do tenant resolvendo automaticamente o contexto do tenant a partir do `tenantToken` informado.
+- **Headers:** `x-tenant-token` (opcional, apenas se preferir enviar o token via cabeçalho).
 - **Corpo (JSON):**
   ```json
   {
+    "tenantToken": "0bbcb686-1dd2-4bd4-8a9d-dfa5b192d099",
     "email": "admin@empresa.com",
     "senha": "Senha@123"
   }
@@ -80,8 +81,9 @@ Para acessar os recursos de domínio:
   }
   ```
 - **Observações:**
+  - Caso envie o `tenantToken` no corpo, não é necessário enviar o cabeçalho `x-tenant-token` durante o login.
   - O token expira conforme `AUTH_EXPIRES_IN`.
-  - O payload do JWT inclui `tenantToken` e será validado junto ao `x-tenant-token` em cada requisição.
+  - O payload do JWT inclui `tenantToken` e será validado junto ao `x-tenant-token` em cada requisição protegida.
 
 #### CRUD de Usuários
 Gerenciamento dos usuários do tenant que podem consumir a API.

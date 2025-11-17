@@ -18,10 +18,10 @@ app.use(express.json());
 
 app.get('/health', (_req: Request, res: Response) => res.json({ status: 'ok' }));
 app.use('/tenants', tenantsRouter);
+app.use('/auth', authRouter);
 
 const rotasTenant = Router();
 rotasTenant.use(tenantMiddleware);
-rotasTenant.use('/auth', authRouter);
 
 const rotasProtegidas = Router();
 rotasProtegidas.use(authMiddleware);

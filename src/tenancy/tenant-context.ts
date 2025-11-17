@@ -2,7 +2,7 @@ import { AsyncLocalStorage } from 'node:async_hooks';
 import type { DataSource } from 'typeorm';
 import type { Tenant } from '../modules/tenants/entities/Tenant';
 
-type TenantStore = { dataSource: DataSource; tenant: Tenant };
+export type TenantStore = { dataSource: DataSource; tenant: Tenant };
 const tenantAsyncStorage = new AsyncLocalStorage<TenantStore>();
 
 export const runWithTenant = (store: TenantStore, next: () => void) => {
