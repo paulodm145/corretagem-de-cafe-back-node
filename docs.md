@@ -12,6 +12,7 @@
 | `npm run migration:run` | Executa as migrações pendentes na base core configurada. |
 | `npm run migration:revert` | Desfaz a última migração executada. |
 | `npm run ibge:import` | Executa a rotina de importação de dados do IBGE diretamente da API pública BrasilAPI. |
+| `npm run bancos:import -- --tenant=<token>` | Atualiza o cadastro de bancos do tenant informado (ou de todos, quando o parâmetro não é enviado) consumindo a BrasilAPI. |
 | `npm run tenants:migrate` | Aplica as migrações de domínio em todos os bancos provisionados para os tenants ativos e garante o usuário padrão. |
 
 > As variáveis de ambiente de conexão devem estar configuradas antes da execução dos comandos que acessam banco de dados.
@@ -233,6 +234,39 @@ Cadastro das observações fiscais que podem ser anexadas às notas, separadas p
 
 ##### DELETE `/observacoes-fiscais/{id}`
 - **Descrição:** Remove uma observação fiscal.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Bancos
+Mantém o catálogo de instituições financeiras sincronizadas com a BrasilAPI.
+
+##### GET `/bancos`
+- **Descrição:** Lista todos os bancos cadastrados para o tenant atual em ordem alfabética.
+
+##### GET `/bancos/{id}`
+- **Descrição:** Retorna os detalhes de um banco específico pelo identificador numérico.
+
+##### POST `/bancos`
+- **Descrição:** Cria manualmente um novo banco ou ajusta o cadastro existente.
+- **Corpo (JSON):**
+  ```json
+  {
+    "codigo": 260,
+    "ispb": "18236120",
+    "nome": "Nu Pagamentos",
+    "nomeCompleto": "Nu Pagamentos S.A."
+  }
+  ```
+- **Regras:**
+  - `codigo` é opcional, mas quando informado deve ser inteiro e maior que zero.
+  - `ispb` é obrigatório e deve conter exatamente 8 dígitos numéricos.
+  - `nome` obrigatório (2 a 150 caracteres).
+  - `nomeCompleto` obrigatório (2 a 255 caracteres).
+
+##### PUT `/bancos/{id}`
+- **Descrição:** Atualiza qualquer um dos campos (`codigo`, `ispb`, `nome`, `nomeCompleto`) seguindo as mesmas regras do POST.
+
+##### DELETE `/bancos/{id}`
+- **Descrição:** Remove um banco cadastrado.
 - **Resposta 204:** Sem corpo.
 
 ## Payloads e Configurações do Projeto

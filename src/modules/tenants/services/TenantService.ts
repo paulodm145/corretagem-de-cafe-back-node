@@ -11,6 +11,8 @@ import {
 import { Cidade } from '../../cidades/entities/Cidade';
 import { Estado } from '../../estados/entities/Estado';
 import { importarDadosIbgeNoDataSource } from '../../ibge/importador-ibge';
+import { Banco } from '../../bancos/entities/Banco';
+import { importarBancosNoDataSource } from '../../bancos/importador-bancos';
 import { Tenant } from '../entities/Tenant';
 import { TenantRepository } from '../repositories/TenantRepository';
 import { garantirUsuarioPadrao } from '../../usuarios/seeders/usuarioPadraoSeeder';
@@ -346,6 +348,7 @@ export class TenantService {
     const dataSourceTenant = await tenantDSManager.obterDataSourceComMigracoes(tenant);
 
     await this.popularEstadosECidades(dataSourceTenant);
+    await this.popularBancos(dataSourceTenant);
     await garantirUsuarioPadrao(dataSourceTenant, {
       nomeTenant: tenant.nomeFantasia || tenant.name,
       emailContato: tenant.emailContato,
@@ -398,6 +401,17 @@ export class TenantService {
     }
 
     await importarDadosIbgeNoDataSource(dataSource);
+  }
+
+  private async popularBancos(dataSource: DataSource): Promise<void> {
+    const repositorioBancos = dataSource.getRepository(Banco);
+    const totalBancos = await repositorioBancos.count();
+
+    if (totalBancos > 0) {
+      return;
+    }
+
+    await importarBancosNoDataSource(dataSource);
   }
 
   private validarFormatoCnpj(cnpj?: string | null) {
