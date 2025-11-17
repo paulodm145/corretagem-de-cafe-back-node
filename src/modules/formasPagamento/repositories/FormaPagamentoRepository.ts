@@ -9,15 +9,11 @@ export class FormaPagamentoRepository implements IFormaPagamentoRepository {
   }
 
   listar(): Promise<FormaPagamento[]> {
-    return this.obterRepositorio().find({ order: { nome: 'ASC' } });
+    return this.obterRepositorio().find({ order: { descricao: 'ASC' } });
   }
 
   buscarPorId(id: number): Promise<FormaPagamento | null> {
     return this.obterRepositorio().findOne({ where: { id } });
-  }
-
-  buscarPorNome(nome: string): Promise<FormaPagamento | null> {
-    return this.obterRepositorio().findOne({ where: { nome } });
   }
 
   async criar(dados: Partial<FormaPagamento>): Promise<FormaPagamento> {

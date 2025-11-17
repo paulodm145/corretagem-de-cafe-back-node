@@ -7,21 +7,13 @@ const idSchema = z
   .transform((valor) => Number(valor))
   .refine((valor) => Number.isInteger(valor) && valor > 0, 'Identificador inválido.');
 
-const nomeSchema = z
-  .string()
-  .trim()
-  .min(3, 'Nome deve possuir ao menos 3 caracteres.')
-  .max(120, 'Nome deve possuir no máximo 120 caracteres.');
-
 const descricaoSchema = z
   .string()
   .trim()
-  .max(255, 'Descrição deve possuir no máximo 255 caracteres.')
-  .optional()
-  .transform((valor) => (valor ? valor : null));
+  .min(3, 'Descrição deve possuir ao menos 3 caracteres.')
+  .max(150, 'Descrição deve possuir no máximo 150 caracteres.');
 
 const criarFormaSchema = z.object({
-  nome: nomeSchema,
   descricao: descricaoSchema,
 });
 
