@@ -15,6 +15,8 @@ import { bancoRouter } from './modules/bancos/routes';
 import { clienteRouter } from './modules/clientes/routes';
 import { localDescargaRouter } from './modules/locaisDescarga/routes';
 import { contaBancariaRouter } from './modules/contasBancarias/routes';
+import { formaPagamentoRouter } from './modules/formasPagamento/routes';
+import { condicaoPagamentoRouter } from './modules/condicoesPagamento/routes';
 
 config();
 
@@ -40,6 +42,8 @@ rotasProtegidas.use(bancoRouter);
 rotasProtegidas.use(clienteRouter);
 rotasProtegidas.use(localDescargaRouter);
 rotasProtegidas.use(contaBancariaRouter);
+rotasProtegidas.use(formaPagamentoRouter);
+rotasProtegidas.use(condicaoPagamentoRouter);
 
 rotasTenant.use(rotasProtegidas);
 

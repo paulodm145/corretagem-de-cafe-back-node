@@ -14,6 +14,7 @@
     "migration:revert": "npm run typeorm:ds -- migration:revert",
     "ibge:import": "ts-node -r tsconfig-paths/register src/commands/ibge-import.ts",
     "bancos:import": "ts-node -r tsconfig-paths/register src/commands/bancos-import.ts",
+    "pagamentos:seed": "ts-node -r tsconfig-paths/register src/commands/pagamentos-seed.ts",
     "tenants:migrate": "ts-node -r tsconfig-paths/register src/commands/tenant-migrate.ts"
   },
   "keywords": [],

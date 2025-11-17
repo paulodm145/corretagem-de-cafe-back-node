@@ -13,6 +13,7 @@
 | `npm run migration:revert` | Desfaz a última migração executada. |
 | `npm run ibge:import` | Executa a rotina de importação de dados do IBGE diretamente da API pública BrasilAPI. |
 | `npm run bancos:import -- --tenant=<token>` | Atualiza o cadastro de bancos do tenant informado (ou de todos, quando o parâmetro não é enviado) consumindo a BrasilAPI. |
+| `npm run pagamentos:seed -- --tenant=<token>` | Executa os seeders de formas e condições de pagamento para todos os tenants ou apenas para o identificador informado. |
 | `npm run tenants:migrate` | Aplica as migrações de domínio em todos os bancos provisionados para os tenants ativos e garante o usuário padrão. |
 
 > As variáveis de ambiente de conexão devem estar configuradas antes da execução dos comandos que acessam banco de dados.
@@ -409,6 +410,73 @@ Armazena os dados bancários e chaves PIX vinculados aos clientes do tenant. Sem
 - **Descrição:** Remove uma conta bancária.
 - **Resposta 204:** Sem corpo.
 
+#### CRUD de Formas de Pagamento
+Catálogo com as formas aceitas pelo tenant. Os seeders criam automaticamente `A VISTA`, `A PRAZO` e `PARCELADO`, mas o CRUD permite incluir outras opções.
+
+##### GET `/formas-pagamento`
+- **Descrição:** Lista todas as formas cadastradas ordenadas por nome.
+
+##### GET `/formas-pagamento/{id}`
+- **Descrição:** Busca uma forma específica pelo identificador.
+
+##### POST `/formas-pagamento`
+- **Descrição:** Cria uma nova forma.
+- **Corpo (JSON):**
+  ```json
+  {
+    "nome": "BOLETO 15 DIAS",
+    "descricao": "Boleto a ser pago em até 15 dias"
+  }
+  ```
+- **Regras:** `nome` obrigatório (3-120 caracteres, único no tenant); `descricao` é opcional com até 255 caracteres.
+
+##### PUT `/formas-pagamento/{id}`
+- **Descrição:** Atualiza qualquer combinação dos campos `nome` e `descricao`.
+- **Regras:** Ao menos um campo deve ser informado no payload.
+
+##### DELETE `/formas-pagamento/{id}`
+- **Descrição:** Remove uma forma de pagamento.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Condições de Pagamento
+Define parcelamentos e prazos vinculados a uma forma de pagamento. Cada registro precisa apontar para uma forma existente e informar as regras de prazo.
+
+##### GET `/condicoes-pagamento`
+- **Descrição:** Lista todas as condições cadastradas ordenadas por descrição.
+
+##### GET `/condicoes-pagamento/{id}`
+- **Descrição:** Detalha uma condição específica.
+
+##### GET `/condicoes-pagamento/forma/{formaPagamentoId}`
+- **Descrição:** Filtra as condições pertencentes à forma indicada.
+- **Parâmetros de rota:** `formaPagamentoId` inteiro maior que zero.
+
+##### POST `/condicoes-pagamento`
+- **Descrição:** Cria uma condição.
+- **Corpo (JSON):**
+  ```json
+  {
+    "formaPagamentoId": 1,
+    "descricao": "30/60 dias",
+    "quantidadeParcelas": 2,
+    "primeiraParcelaEmDias": 30,
+    "intervaloDias": 30
+  }
+  ```
+- **Regras:**
+  - `formaPagamentoId` deve apontar para uma forma existente.
+  - `descricao` obrigatório entre 3 e 150 caracteres.
+  - `quantidadeParcelas` entre 1 e 60.
+  - `primeiraParcelaEmDias` e `intervaloDias` aceitam apenas inteiros positivos (zero permite cobrança imediata).
+
+##### PUT `/condicoes-pagamento/{id}`
+- **Descrição:** Atualiza qualquer conjunto dos campos aceitos no POST.
+- **Regras:** Pelo menos um campo deve ser enviado. Alterar `formaPagamentoId` também valida a existência da forma.
+
+##### DELETE `/condicoes-pagamento/{id}`
+- **Descrição:** Remove uma condição.
+- **Resposta 204:** Sem corpo.
+
 ## Payloads e Configurações do Projeto
 
 ### Variáveis de ambiente relacionadas a tenants e autenticação
@@ -451,3 +519,8 @@ Armazena os dados bancários e chaves PIX vinculados aos clientes do tenant. Sem
 ### Tipos de sacaria padrão por tenant
 - Após as migrações, o seeder garante até cinco tipos de sacaria/embalagens comuns (`Sacaria nova 60kg`, `Sacaria usada 60kg`, `Big bag 1000kg`, `Café granel ensacado`, `Carga a granel`).
 - O seeder apenas insere as descrições que ainda não existirem, permitindo personalização sem sobrescrever registros.
+
+### Formas e condições de pagamento padrão
+- O provisionamento do tenant executa os seeders `garantirFormasPagamentoPadrao` e `garantirCondicoesPagamentoPadrao`.
+- As formas inseridas automaticamente são `A VISTA`, `A PRAZO` e `PARCELADO`.
+- As condições padrão criam cinco prazos usuais (pagamento imediato, 30 dias, 45 dias, 30/60 dias e entrada + 2x mensais). O comando `npm run pagamentos:seed` pode ser executado a qualquer momento para reaplicar os seeders em um tenant específico ou em todos.

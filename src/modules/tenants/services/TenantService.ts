@@ -17,6 +17,8 @@ import { Tenant } from '../entities/Tenant';
 import { TenantRepository } from '../repositories/TenantRepository';
 import { garantirUsuarioPadrao } from '../../usuarios/seeders/usuarioPadraoSeeder';
 import { garantirTiposSacariaPadrao } from '../../tiposSacaria/seeders/tiposSacariaPadraoSeeder';
+import { garantirFormasPagamentoPadrao } from '../../formasPagamento/seeders/formasPagamentoSeeder';
+import { garantirCondicoesPagamentoPadrao } from '../../condicoesPagamento/seeders/condicoesPagamentoSeeder';
 
 const TAMANHO_MAXIMO_IDENTIFICADOR = 63; // limite do PostgreSQL
 
@@ -354,6 +356,8 @@ export class TenantService {
       emailContato: tenant.emailContato,
     });
     await garantirTiposSacariaPadrao(dataSourceTenant);
+    await garantirFormasPagamentoPadrao(dataSourceTenant);
+    await garantirCondicoesPagamentoPadrao(dataSourceTenant);
   }
 
   private async instalarExtensoesObrigatorias(configuracao: DetalhesCompletosBanco): Promise<void> {
