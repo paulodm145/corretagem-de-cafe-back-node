@@ -12,7 +12,7 @@ export class ProdutoRepository implements IProdutoRepository {
     return this.obterRepositorio().find({ order: { descricao: 'ASC' } });
   }
 
-  async buscarPorId(id: string): Promise<Produto | null> {
+  async buscarPorId(id: number): Promise<Produto | null> {
     return this.obterRepositorio().findOne({ where: { id } });
   }
 
@@ -26,7 +26,7 @@ export class ProdutoRepository implements IProdutoRepository {
     return this.obterRepositorio().save(produto);
   }
 
-  async remover(id: string): Promise<void> {
+  async remover(id: number): Promise<void> {
     await this.obterRepositorio().delete(id);
   }
 }

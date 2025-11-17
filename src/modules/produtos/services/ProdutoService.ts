@@ -1,11 +1,20 @@
+import { ZodError, z } from 'zod';
 import { Produto } from '../entities/Produto';
 import { IProdutoRepository } from '../repositories/IProdutoRepository';
 
-type CriarProdutoDTO = {
-  descricao?: string | null;
-};
+const descricaoSchema = z
+  .string()
+  .trim()
+  .min(1, 'Descrição é obrigatória.')
+  .max(255, 'Descrição deve conter no máximo 255 caracteres.');
 
-type AtualizarProdutoDTO = Partial<CriarProdutoDTO>;
+const criarProdutoSchema = z.object({
+  descricao: descricaoSchema,
+});
+
+const atualizarProdutoSchema = z.object({
+  descricao: descricaoSchema,
+});
 
 export class ProdutoService {
   constructor(private readonly produtoRepository: IProdutoRepository) {}
@@ -14,7 +23,7 @@ export class ProdutoService {
     return this.produtoRepository.listar();
   }
 
-  async buscarPorId(id: string): Promise<Produto> {
+  async buscarPorId(id: number): Promise<Produto> {
     const produto = await this.produtoRepository.buscarPorId(id);
     if (!produto) {
       throw new Error('Produto não encontrado.');
@@ -22,36 +31,38 @@ export class ProdutoService {
     return produto;
   }
 
-  async criar(dados: CriarProdutoDTO): Promise<Produto> {
-    const descricao = this.validarDescricao(dados.descricao);
-    return this.produtoRepository.criar({ descricao });
+  async criar(payload: unknown): Promise<Produto> {
+    try {
+      const { descricao } = criarProdutoSchema.parse(payload);
+      return this.produtoRepository.criar({ descricao });
+    } catch (erro) {
+      this.lancarErroValidacao(erro);
+    }
   }
 
-  async atualizar(id: string, dados: AtualizarProdutoDTO): Promise<Produto> {
+  async atualizar(id: number, payload: unknown): Promise<Produto> {
     const produto = await this.buscarPorId(id);
 
-    if (dados.descricao !== undefined) {
-      produto.descricao = this.validarDescricao(dados.descricao);
+    try {
+      const { descricao } = atualizarProdutoSchema.parse(payload);
+      produto.descricao = descricao;
+      return this.produtoRepository.salvar(produto);
+    } catch (erro) {
+      this.lancarErroValidacao(erro);
     }
-
-    return this.produtoRepository.salvar(produto);
   }
 
-  async remover(id: string): Promise<void> {
+  async remover(id: number): Promise<void> {
     await this.buscarPorId(id);
     await this.produtoRepository.remover(id);
   }
 
-  private validarDescricao(descricao?: string): string {
-    const descricaoNormalizada = descricao?.trim();
-    if (!descricaoNormalizada) {
-      throw new Error('Descrição é obrigatória.');
+  private lancarErroValidacao(erro: unknown): never {
+    if (erro instanceof ZodError) {
+      const mensagem = erro.issues.map((issue) => issue.message).join(' ');
+      throw new Error(mensagem);
     }
 
-    if (descricaoNormalizada.length > 255) {
-      throw new Error('Descrição deve conter no máximo 255 caracteres.');
-    }
-
-    return descricaoNormalizada;
+    throw erro instanceof Error ? erro : new Error('Dados inválidos.');
   }
 }

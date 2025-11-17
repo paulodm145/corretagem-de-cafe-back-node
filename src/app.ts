@@ -6,6 +6,9 @@ import { cidadeRouter } from './modules/cidades/routes';
 import { tenantMiddleware } from './middleware/tenant-middleware';
 import { tenantsRouter } from './modules/tenants/routes';
 import { produtoRouter } from './modules/produtos/routes';
+import { usuarioRouter } from './modules/usuarios/routes';
+import { authRouter } from './modules/autenticacao/routes';
+import { authMiddleware } from './middleware/auth-middleware';
 
 config();
 
@@ -16,10 +19,18 @@ app.get('/health', (_req: Request, res: Response) => res.json({ status: 'ok' }))
 app.use('/tenants', tenantsRouter);
 
 const rotasTenant = Router();
-rotasTenant.use(estadoRouter);
-rotasTenant.use(cidadeRouter);
-rotasTenant.use(produtoRouter);
+rotasTenant.use(tenantMiddleware);
+rotasTenant.use('/auth', authRouter);
 
-app.use(tenantMiddleware, rotasTenant);
+const rotasProtegidas = Router();
+rotasProtegidas.use(authMiddleware);
+rotasProtegidas.use(estadoRouter);
+rotasProtegidas.use(cidadeRouter);
+rotasProtegidas.use(produtoRouter);
+rotasProtegidas.use(usuarioRouter);
+
+rotasTenant.use(rotasProtegidas);
+
+app.use(rotasTenant);
 
 export { app };

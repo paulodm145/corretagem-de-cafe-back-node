@@ -16,7 +16,7 @@ export class ProdutoController {
 
   buscarPorId = async (request: Request, response: Response): Promise<Response> => {
     try {
-      const { id } = request.params;
+      const id = this.obterIdParam(request.params.id);
       const produto = await produtoService.buscarPorId(id);
       return response.json(produto);
     } catch (erro) {
@@ -26,8 +26,7 @@ export class ProdutoController {
 
   criar = async (request: Request, response: Response): Promise<Response> => {
     try {
-      const { descricao } = request.body ?? {};
-      const produtoCriado = await produtoService.criar({ descricao });
+      const produtoCriado = await produtoService.criar(request.body);
       return response.status(201).json(produtoCriado);
     } catch (erro) {
       return this.responderErro(response, erro);
@@ -36,9 +35,8 @@ export class ProdutoController {
 
   atualizar = async (request: Request, response: Response): Promise<Response> => {
     try {
-      const { id } = request.params;
-      const { descricao } = request.body ?? {};
-      const produtoAtualizado = await produtoService.atualizar(id, { descricao });
+      const id = this.obterIdParam(request.params.id);
+      const produtoAtualizado = await produtoService.atualizar(id, request.body);
       return response.json(produtoAtualizado);
     } catch (erro) {
       return this.responderErro(response, erro);
@@ -47,7 +45,7 @@ export class ProdutoController {
 
   remover = async (request: Request, response: Response): Promise<Response> => {
     try {
-      const { id } = request.params;
+      const id = this.obterIdParam(request.params.id);
       await produtoService.remover(id);
       return response.status(204).send();
     } catch (erro) {
@@ -67,5 +65,13 @@ export class ProdutoController {
     return response
       .status(500)
       .json({ mensagem: 'Erro interno ao processar a requisição.' });
+  }
+
+  private obterIdParam(param: string): number {
+    const id = Number(param);
+    if (!Number.isInteger(id) || id <= 0) {
+      throw new Error('Identificador inválido.');
+    }
+    return id;
   }
 }

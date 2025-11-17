@@ -27,7 +27,8 @@ Sempre que gerar código, siga as boas práticas abaixo, mantendo o código limp
   - Use comentários apenas quando 
    (regras de negócio, decisões complexas).
   - Não comente o óbvio; prefira melhorar o nome de funções/variáveis.  
-- Documente rotas, payloads e anotações importantes no arquivo docs.md  
+- Documente rotas, payloads e anotações importantes no arquivo docs.md
+- Chaves primárias **nunca** devem usar UUID. Sempre utilize tipos inteiros auto-incrementais (ex.: `serial`, `bigint`) para identificadores.
 
 ---
 

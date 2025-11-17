@@ -55,13 +55,17 @@ export class TenantController {
 
   private responderErro(response: Response, error: unknown): Response {
     if (error instanceof Error && error.message.includes('não encontrado')) {
-      return response.status(404).json({ mensagem: error.message, line: error.stack, file: __filename });
+      return response
+        .status(404)
+        .json({ mensagem: error.message, line: error.stack, file: __filename });
     }
 
     if (error instanceof Error) {
-      return response.status(400).json({ mensagem: error.message, line: error.stack, file: __filename });
+      return response
+        .status(400)
+        .json({ mensagem: error.message, line: error.stack, file: __filename });
     }
 
-    return response.status(500).json({ mensagem: error.message, line: error.stack, file: __filename });
+    return response.status(500).json({ mensagem: 'Erro interno ao processar a solicitação.' });
   }
 }
