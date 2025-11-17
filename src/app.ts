@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-import express, { Router, Request, Response } from 'express';
+import express, { Router, Request, Response, NextFunction } from 'express';
 import { config } from 'dotenv';
 import { estadoRouter } from './modules/estados/routes';
 import { cidadeRouter } from './modules/cidades/routes';
@@ -33,6 +33,17 @@ rotasProtegidas.use(tipoSacariaRouter);
 
 rotasTenant.use(rotasProtegidas);
 
-app.use(rotasTenant);
+const rotasPublicas = ['/auth', '/tenants', '/health'];
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const caminho = req.path;
+  const rotaEhPublica = rotasPublicas.some((rota) => caminho.startsWith(rota));
+
+  if (rotaEhPublica) {
+    return next();
+  }
+
+  return rotasTenant(req, res, next);
+});
 
 export { app };
