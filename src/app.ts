@@ -11,6 +11,12 @@ import { authRouter } from './modules/autenticacao/routes';
 import { authMiddleware } from './middleware/auth-middleware';
 import { tipoSacariaRouter } from './modules/tiposSacaria/routes';
 import { observacaoFiscalRouter } from './modules/observacoesFiscais/routes';
+import { bancoRouter } from './modules/bancos/routes';
+import { clienteRouter } from './modules/clientes/routes';
+import { localDescargaRouter } from './modules/locaisDescarga/routes';
+import { contaBancariaRouter } from './modules/contasBancarias/routes';
+import { formaPagamentoRouter } from './modules/formasPagamento/routes';
+import { condicaoPagamentoRouter } from './modules/condicoesPagamento/routes';
 
 config();
 
@@ -32,6 +38,12 @@ rotasProtegidas.use(produtoRouter);
 rotasProtegidas.use(usuarioRouter);
 rotasProtegidas.use(tipoSacariaRouter);
 rotasProtegidas.use(observacaoFiscalRouter);
+rotasProtegidas.use(bancoRouter);
+rotasProtegidas.use(clienteRouter);
+rotasProtegidas.use(localDescargaRouter);
+rotasProtegidas.use(contaBancariaRouter);
+rotasProtegidas.use(formaPagamentoRouter);
+rotasProtegidas.use(condicaoPagamentoRouter);
 
 rotasTenant.use(rotasProtegidas);
 

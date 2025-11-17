@@ -29,6 +29,8 @@ Sempre que gerar código, siga as boas práticas abaixo, mantendo o código limp
   - Não comente o óbvio; prefira melhorar o nome de funções/variáveis.  
 - Documente rotas, payloads e anotações importantes no arquivo docs.md
 - Chaves primárias **nunca** devem usar UUID. Sempre utilize tipos inteiros auto-incrementais (ex.: `serial`, `bigint`) para identificadores.
+- Todos os enums do domínio devem ficar em `src/ENUMS`, com valores **sempre em caixa alta** para garantir consistência com o banco e com o front-end.
+- Sempre que criar ou atualizar endpoints, utilize **Zod** para validar os payloads antes de chamar os services.
 
 ---
 

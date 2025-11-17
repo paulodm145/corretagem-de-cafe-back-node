@@ -12,6 +12,8 @@
 | `npm run migration:run` | Executa as migrações pendentes na base core configurada. |
 | `npm run migration:revert` | Desfaz a última migração executada. |
 | `npm run ibge:import` | Executa a rotina de importação de dados do IBGE diretamente da API pública BrasilAPI. |
+| `npm run bancos:import -- --tenant=<token>` | Atualiza o cadastro de bancos do tenant informado (ou de todos, quando o parâmetro não é enviado) consumindo a BrasilAPI. |
+| `npm run pagamentos:seed -- --tenant=<token>` | Executa os seeders de formas e condições de pagamento para todos os tenants ou apenas para o identificador informado. |
 | `npm run tenants:migrate` | Aplica as migrações de domínio em todos os bancos provisionados para os tenants ativos e garante o usuário padrão. |
 
 > As variáveis de ambiente de conexão devem estar configuradas antes da execução dos comandos que acessam banco de dados.
@@ -235,6 +237,246 @@ Cadastro das observações fiscais que podem ser anexadas às notas, separadas p
 - **Descrição:** Remove uma observação fiscal.
 - **Resposta 204:** Sem corpo.
 
+#### CRUD de Bancos
+Mantém o catálogo de instituições financeiras sincronizadas com a BrasilAPI.
+
+##### GET `/bancos`
+- **Descrição:** Lista todos os bancos cadastrados para o tenant atual em ordem alfabética.
+
+##### GET `/bancos/{id}`
+- **Descrição:** Retorna os detalhes de um banco específico pelo identificador numérico.
+
+##### POST `/bancos`
+- **Descrição:** Cria manualmente um novo banco ou ajusta o cadastro existente.
+- **Corpo (JSON):**
+  ```json
+  {
+    "codigo": 260,
+    "ispb": "18236120",
+    "nome": "Nu Pagamentos",
+    "nomeCompleto": "Nu Pagamentos S.A."
+  }
+  ```
+- **Regras:**
+  - `codigo` é opcional, mas quando informado deve ser inteiro e maior que zero.
+  - `ispb` é obrigatório e deve conter exatamente 8 dígitos numéricos.
+  - `nome` obrigatório (2 a 150 caracteres).
+  - `nomeCompleto` obrigatório (2 a 255 caracteres).
+
+##### PUT `/bancos/{id}`
+- **Descrição:** Atualiza qualquer um dos campos (`codigo`, `ispb`, `nome`, `nomeCompleto`) seguindo as mesmas regras do POST.
+
+##### DELETE `/bancos/{id}`
+- **Descrição:** Remove um banco cadastrado.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Clientes
+Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos listados como obrigatórios são validados via Zod e devem respeitar os seguintes enums (sempre em maiúsculas):
+
+- `tipoPessoa`: `PESSOA_FISICA` (ou código `1`) e `PESSOA_JURIDICA` (ou código `2`).
+- `tipoComprador`: `PRODUTOR` (`1`), `COMPRADOR` (`2`) ou `PRODUTOR_COMPRADOR` (`3`).
+- `atuacao`: `MERCADO_INTERNO` (`1`), `EXPORTADOR` (`2`), `TORREFADOR` (`3`) ou `CORRETOR` (`4`).
+
+> Todo cliente possui o campo booleano `ativo` (padrão `true`). Utilize a rota `PATCH /clientes/{id}/status` para ativar/desativar sem alterar os demais dados cadastrais.
+
+##### GET `/clientes`
+- **Descrição:** Lista todos os clientes do tenant ordenados pelo nome.
+
+##### GET `/clientes/{id}`
+- **Descrição:** Detalha um cliente específico pelo identificador.
+
+##### POST `/clientes`
+- **Descrição:** Cria um cliente seguindo o novo cadastro simplificado.
+- **Corpo (JSON):**
+  ```json
+  {
+    "nome": "Fazenda São Jorge",
+    "tipoPessoa": "PESSOA_JURIDICA",
+    "documento": "12345678000199",
+    "inscricaoEstadual": "1234567890",
+    "tipoComprador": "PRODUTOR_COMPRADOR",
+    "atuacao": "EXPORTADOR",
+    "dataNascimento": "1990-01-01",
+    "cep": "01001000",
+    "endereco": "Rua Exemplo",
+    "numero": "100",
+    "complemento": "Sala 2",
+    "bairro": "Centro",
+    "uf": "SP",
+    "cidade": "São Paulo",
+    "email": "contato@exemplo.com",
+    "telefone": "11999999999",
+    "observacao": "Cliente estratégico",
+    "numeroCar": "CAR123456"
+  }
+  ```
+- **Regras principais:**
+  - `documento` aceita CPF/CNPJ com ou sem máscara; apenas dígitos são armazenados (11 dígitos para PF, 14 para PJ).
+  - `dataNascimento` deve ser uma data válida (string ISO ou objeto Date).
+  - `cep` e `telefone` aceitam qualquer formatação, mas são normalizados para dígitos.
+  - `email`, `inscricaoEstadual`, `complemento`, `observacao` e `numeroCar` são opcionais.
+
+##### PUT `/clientes/{id}`
+- **Descrição:** Atualiza um cliente existente. Qualquer combinação dos campos do POST é aceita, desde que ao menos um campo seja enviado.
+
+##### DELETE `/clientes/{id}`
+- **Descrição:** Remove um cliente.
+- **Resposta 204:** Sem corpo.
+
+##### PATCH `/clientes/{id}/status`
+- **Descrição:** Atualiza apenas o status ativo do cliente.
+- **Corpo (JSON):** `{ "ativo": true }`
+- **Regras:** `ativo` é obrigatório e deve ser booleano. Útil para bloquear/reativar clientes sem perder o histórico.
+
+#### CRUD de Locais de Descarga
+Pontos de recebimento vinculados a um cliente. Úteis para controlar para onde o café pode ser entregue. Todos os campos passam por validação com Zod e exigem que o `clienteId` exista.
+
+##### GET `/locais-descarga`
+- **Descrição:** Lista todos os locais de descarga do tenant ordenados por nome.
+
+##### GET `/locais-descarga/{id}`
+- **Descrição:** Detalha um local pelo identificador.
+
+##### GET `/locais-descarga/cliente/{clienteId}`
+- **Descrição:** Lista apenas os locais vinculados ao cliente informado.
+- **Parâmetros de rota:** `clienteId` inteiro maior que zero.
+
+##### POST `/locais-descarga`
+- **Descrição:** Cria um novo local de descarga vinculado a um cliente.
+- **Corpo (JSON):**
+  ```json
+  {
+    "clienteId": 1,
+    "nome": "Armazém Matriz",
+    "cep": "01001000",
+    "endereco": "Rua Exemplo",
+    "numero": "100",
+    "complemento": "Galpão 3",
+    "bairro": "Centro",
+    "uf": "SP",
+    "cidade": "São Paulo"
+  }
+  ```
+- **Regras principais:** `clienteId` deve existir; `nome`, `endereco`, `numero`, `bairro`, `uf`, `cidade` são obrigatórios; `cep` aceita qualquer formatação mas é salvo com 8 dígitos; `complemento` é opcional.
+
+##### PUT `/locais-descarga/{id}`
+- **Descrição:** Atualiza um local existente. Qualquer combinação de campos do POST pode ser enviada, desde que ao menos um esteja presente.
+
+##### DELETE `/locais-descarga/{id}`
+- **Descrição:** Remove um local de descarga.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Contas Bancárias
+Armazena os dados bancários e chaves PIX vinculados aos clientes do tenant. Sempre informe um `clienteId` válido e um `bancoId` existente (consulte o CRUD de bancos). Os campos de lista aceitam o valor em texto ou o respectivo código numérico:
+
+- `tipoConta`: `CORRENTE` (`1`), `POUPANCA` (`2`), `SALARIO` (`3`) ou `PAGAMENTO` (`4`).
+- `tipoChavePix`: `CPF` (`1`), `CNPJ` (`2`), `EMAIL` (`3`), `TELEFONE` (`4`) ou `ALEATORIA` (`5`).
+
+##### GET `/contas-bancarias`
+- **Descrição:** Lista todas as contas bancárias cadastradas no tenant ordenadas pelo identificador.
+
+##### GET `/contas-bancarias/{id}`
+- **Descrição:** Detalha uma conta bancária específica.
+
+##### GET `/contas-bancarias/cliente/{clienteId}`
+- **Descrição:** Lista apenas as contas vinculadas ao cliente informado.
+- **Parâmetros de rota:** `clienteId` inteiro maior que zero.
+
+##### POST `/contas-bancarias`
+- **Descrição:** Cria uma conta bancária.
+- **Corpo (JSON):**
+  ```json
+  {
+    "clienteId": 1,
+    "bancoId": 10,
+    "agencia": "1234",
+    "numeroConta": "1234567",
+    "digitoConta": "0",
+    "tipoConta": "CORRENTE",
+    "tipoChavePix": "CNPJ",
+    "chavePix": "12345678000199"
+  }
+  ```
+- **Regras principais:**
+  - `agencia` deve conter de 3 a 20 caracteres alfanuméricos (apenas dígitos/letras são persistidos).
+  - `numeroConta` deve conter de 3 a 30 caracteres alfanuméricos.
+  - `digitoConta` é opcional (1 a 5 caracteres) e é salvo em maiúsculas.
+  - `tipoConta`, `tipoChavePix` e `chavePix` são opcionais, mas `tipoChavePix` e `chavePix` devem ser enviados juntos.
+
+##### PUT `/contas-bancarias/{id}`
+- **Descrição:** Atualiza qualquer combinação dos campos do POST. O serviço valida os relacionamentos ao alterar `clienteId` ou `bancoId`.
+
+##### DELETE `/contas-bancarias/{id}`
+- **Descrição:** Remove uma conta bancária.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Formas de Pagamento
+Catálogo com as formas aceitas pelo tenant. Os seeders criam automaticamente `A VISTA`, `A PRAZO` e `PARCELADO`, mas o CRUD permite incluir outras opções.
+
+##### GET `/formas-pagamento`
+- **Descrição:** Lista todas as formas cadastradas ordenadas por nome.
+
+##### GET `/formas-pagamento/{id}`
+- **Descrição:** Busca uma forma específica pelo identificador.
+
+##### POST `/formas-pagamento`
+- **Descrição:** Cria uma nova forma.
+- **Corpo (JSON):**
+  ```json
+  {
+    "nome": "BOLETO 15 DIAS",
+    "descricao": "Boleto a ser pago em até 15 dias"
+  }
+  ```
+- **Regras:** `nome` obrigatório (3-120 caracteres, único no tenant); `descricao` é opcional com até 255 caracteres.
+
+##### PUT `/formas-pagamento/{id}`
+- **Descrição:** Atualiza qualquer combinação dos campos `nome` e `descricao`.
+- **Regras:** Ao menos um campo deve ser informado no payload.
+
+##### DELETE `/formas-pagamento/{id}`
+- **Descrição:** Remove uma forma de pagamento.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Condições de Pagamento
+Define parcelamentos e prazos vinculados a uma forma de pagamento. Cada registro precisa apontar para uma forma existente e informar as regras de prazo.
+
+##### GET `/condicoes-pagamento`
+- **Descrição:** Lista todas as condições cadastradas ordenadas por descrição.
+
+##### GET `/condicoes-pagamento/{id}`
+- **Descrição:** Detalha uma condição específica.
+
+##### GET `/condicoes-pagamento/forma/{formaPagamentoId}`
+- **Descrição:** Filtra as condições pertencentes à forma indicada.
+- **Parâmetros de rota:** `formaPagamentoId` inteiro maior que zero.
+
+##### POST `/condicoes-pagamento`
+- **Descrição:** Cria uma condição.
+- **Corpo (JSON):**
+  ```json
+  {
+    "formaPagamentoId": 1,
+    "descricao": "30/60 dias",
+    "quantidadeParcelas": 2,
+    "primeiraParcelaEmDias": 30,
+    "intervaloDias": 30
+  }
+  ```
+- **Regras:**
+  - `formaPagamentoId` deve apontar para uma forma existente.
+  - `descricao` obrigatório entre 3 e 150 caracteres.
+  - `quantidadeParcelas` entre 1 e 60.
+  - `primeiraParcelaEmDias` e `intervaloDias` aceitam apenas inteiros positivos (zero permite cobrança imediata).
+
+##### PUT `/condicoes-pagamento/{id}`
+- **Descrição:** Atualiza qualquer conjunto dos campos aceitos no POST.
+- **Regras:** Pelo menos um campo deve ser enviado. Alterar `formaPagamentoId` também valida a existência da forma.
+
+##### DELETE `/condicoes-pagamento/{id}`
+- **Descrição:** Remove uma condição.
+- **Resposta 204:** Sem corpo.
+
 ## Payloads e Configurações do Projeto
 
 ### Variáveis de ambiente relacionadas a tenants e autenticação
@@ -277,3 +519,8 @@ Cadastro das observações fiscais que podem ser anexadas às notas, separadas p
 ### Tipos de sacaria padrão por tenant
 - Após as migrações, o seeder garante até cinco tipos de sacaria/embalagens comuns (`Sacaria nova 60kg`, `Sacaria usada 60kg`, `Big bag 1000kg`, `Café granel ensacado`, `Carga a granel`).
 - O seeder apenas insere as descrições que ainda não existirem, permitindo personalização sem sobrescrever registros.
+
+### Formas e condições de pagamento padrão
+- O provisionamento do tenant executa os seeders `garantirFormasPagamentoPadrao` e `garantirCondicoesPagamentoPadrao`.
+- As formas inseridas automaticamente são `A VISTA`, `A PRAZO` e `PARCELADO`.
+- As condições padrão criam cinco prazos usuais (pagamento imediato, 30 dias, 45 dias, 30/60 dias e entrada + 2x mensais). O comando `npm run pagamentos:seed` pode ser executado a qualquer momento para reaplicar os seeders em um tenant específico ou em todos.

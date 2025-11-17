@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm';
-import { TipoObservacaoFiscal } from '../../../ENUM/tipoObservacaoFiscal';
+import { TipoObservacaoFiscal } from '../../../ENUMS/tipoObservacaoFiscal';
 import { getTenantDS } from '../../../tenancy/tenant-context';
 import { ObservacaoFiscal } from '../entities/ObservacaoFiscal';
 import { IObservacaoFiscalRepository } from './IObservacaoFiscalRepository';
