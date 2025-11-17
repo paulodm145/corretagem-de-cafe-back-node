@@ -1,4 +1,4 @@
-import { TipoObservacaoFiscal } from '../../../ENUM/tipoObservacaoFiscal';
+import { TipoObservacaoFiscal } from '../../../ENUMS/tipoObservacaoFiscal';
 import { ObservacaoFiscal } from '../entities/ObservacaoFiscal';
 
 export interface IObservacaoFiscalRepository {

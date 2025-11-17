@@ -1,5 +1,5 @@
 import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
-import { TipoObservacaoFiscal } from '../../../ENUM/tipoObservacaoFiscal';
+import { TipoObservacaoFiscal } from '../../../ENUMS/tipoObservacaoFiscal';
 
 @Entity('observacoes_fiscais')
 export class ObservacaoFiscal {

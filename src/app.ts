@@ -12,6 +12,7 @@ import { authMiddleware } from './middleware/auth-middleware';
 import { tipoSacariaRouter } from './modules/tiposSacaria/routes';
 import { observacaoFiscalRouter } from './modules/observacoesFiscais/routes';
 import { bancoRouter } from './modules/bancos/routes';
+import { clienteRouter } from './modules/clientes/routes';
 
 config();
 
@@ -34,6 +35,7 @@ rotasProtegidas.use(usuarioRouter);
 rotasProtegidas.use(tipoSacariaRouter);
 rotasProtegidas.use(observacaoFiscalRouter);
 rotasProtegidas.use(bancoRouter);
+rotasProtegidas.use(clienteRouter);
 
 rotasTenant.use(rotasProtegidas);
 

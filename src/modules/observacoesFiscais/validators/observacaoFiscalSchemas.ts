@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { TipoObservacaoFiscal } from '../../../ENUM/tipoObservacaoFiscal';
+import { TipoObservacaoFiscal } from '../../../ENUMS/tipoObservacaoFiscal';
 
 const tipoObservacaoFiscalSchema = z.preprocess(
   (valor) => (typeof valor === 'string' ? valor.trim().toUpperCase() : valor),

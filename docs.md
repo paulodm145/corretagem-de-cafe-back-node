@@ -269,6 +269,57 @@ Mantém o catálogo de instituições financeiras sincronizadas com a BrasilAPI.
 - **Descrição:** Remove um banco cadastrado.
 - **Resposta 204:** Sem corpo.
 
+#### CRUD de Clientes
+Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos listados como obrigatórios são validados via Zod e devem respeitar os seguintes enums (sempre em maiúsculas):
+
+- `tipoPessoa`: `PESSOA_FISICA` (ou código `1`) e `PESSOA_JURIDICA` (ou código `2`).
+- `tipoComprador`: `PRODUTOR` (`1`), `COMPRADOR` (`2`) ou `PRODUTOR_COMPRADOR` (`3`).
+- `atuacao`: `MERCADO_INTERNO` (`1`), `EXPORTADOR` (`2`), `TORREFADOR` (`3`) ou `CORRETOR` (`4`).
+
+##### GET `/clientes`
+- **Descrição:** Lista todos os clientes do tenant ordenados pelo nome.
+
+##### GET `/clientes/{id}`
+- **Descrição:** Detalha um cliente específico pelo identificador.
+
+##### POST `/clientes`
+- **Descrição:** Cria um cliente seguindo o novo cadastro simplificado.
+- **Corpo (JSON):**
+  ```json
+  {
+    "nome": "Fazenda São Jorge",
+    "tipoPessoa": "PESSOA_JURIDICA",
+    "documento": "12345678000199",
+    "inscricaoEstadual": "1234567890",
+    "tipoComprador": "PRODUTOR_COMPRADOR",
+    "atuacao": "EXPORTADOR",
+    "dataNascimento": "1990-01-01",
+    "cep": "01001000",
+    "endereco": "Rua Exemplo",
+    "numero": "100",
+    "complemento": "Sala 2",
+    "bairro": "Centro",
+    "uf": "SP",
+    "cidade": "São Paulo",
+    "email": "contato@exemplo.com",
+    "telefone": "11999999999",
+    "observacao": "Cliente estratégico",
+    "numeroCar": "CAR123456"
+  }
+  ```
+- **Regras principais:**
+  - `documento` aceita CPF/CNPJ com ou sem máscara; apenas dígitos são armazenados (11 dígitos para PF, 14 para PJ).
+  - `dataNascimento` deve ser uma data válida (string ISO ou objeto Date).
+  - `cep` e `telefone` aceitam qualquer formatação, mas são normalizados para dígitos.
+  - `email`, `inscricaoEstadual`, `complemento`, `observacao` e `numeroCar` são opcionais.
+
+##### PUT `/clientes/{id}`
+- **Descrição:** Atualiza um cliente existente. Qualquer combinação dos campos do POST é aceita, desde que ao menos um campo seja enviado.
+
+##### DELETE `/clientes/{id}`
+- **Descrição:** Remove um cliente.
+- **Resposta 204:** Sem corpo.
+
 ## Payloads e Configurações do Projeto
 
 ### Variáveis de ambiente relacionadas a tenants e autenticação
