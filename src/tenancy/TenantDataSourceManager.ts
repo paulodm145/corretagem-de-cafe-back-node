@@ -2,42 +2,70 @@ import path from 'node:path';
 import { DataSource } from 'typeorm';
 import { Tenant } from '../modules/tenants/entities/Tenant';
 
-const ENTITIES_GLOB = path.join(__dirname, '..', 'modules', '**', 'entities', '*.{ts,js}');
-const MIGRATIONS_GLOB = path.join(__dirname, '..', 'database', 'migrations', '*.{ts,js}');
+export const ENTIDADES_TENANT_GLOB = path.join(
+  __dirname,
+  '..',
+  'modules',
+  '**',
+  'entities',
+  '*.{ts,js}'
+);
+export const MIGRACOES_TENANT_GLOB = path.join(
+  __dirname,
+  '..',
+  'database',
+  'tenant-migrations',
+  '*.{ts,js}'
+);
+export const TABELA_MIGRACOES_TENANT = 'tenant_migrations';
 
 class TenantDataSourceManager {
   private cache = new Map<string, DataSource>(); // key: tenant.token
 
   async getOrCreate(tenant: Tenant): Promise<DataSource> {
     const cached = this.cache.get(tenant.token);
-    if (cached && cached.isInitialized) return cached;
+    if (cached && cached.isInitialized) {
+      return cached;
+    }
 
-    const ds = new DataSource({
+    if (!tenant.dbHost || !tenant.dbUsername || !tenant.dbPassword || !tenant.dbName) {
+      throw new Error('Dados de conexão do tenant estão incompletos.');
+    }
+
+    const dataSource = new DataSource({
       type: 'postgres',
       host: tenant.dbHost,
-      port: tenant.dbPort,
+      port: tenant.dbPort ?? 5432,
       username: tenant.dbUsername,
       password: tenant.dbPassword,
       database: tenant.dbName,
       ssl: tenant.dbSsl ? { rejectUnauthorized: false } : undefined,
       synchronize: false,
       logging: false,
-      entities: [ENTITIES_GLOB],
-      migrations: [MIGRATIONS_GLOB],
+      entities: [ENTIDADES_TENANT_GLOB],
+      migrations: [MIGRACOES_TENANT_GLOB],
+      migrationsTableName: TABELA_MIGRACOES_TENANT,
     });
 
-    await ds.initialize();
+    await dataSource.initialize();
 
-    // opcional: garantir migrations aplicadas no banco do tenant
-    await ds.runMigrations();
+    this.cache.set(tenant.token, dataSource);
+    return dataSource;
+  }
 
-    this.cache.set(tenant.token, ds);
-    return ds;
+  async obterDataSourceComMigracoes(tenant: Tenant): Promise<DataSource> {
+    const dataSource = await this.getOrCreate(tenant);
+    await dataSource.runMigrations();
+    return dataSource;
   }
 
   async closeAll() {
     await Promise.all(
-      Array.from(this.cache.values()).map(async (ds) => ds.isInitialized && ds.destroy())
+      Array.from(this.cache.values()).map(async (dataSource) => {
+        if (dataSource.isInitialized) {
+          await dataSource.destroy();
+        }
+      })
     );
     this.cache.clear();
   }

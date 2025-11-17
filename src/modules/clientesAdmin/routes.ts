@@ -1,5 +1,5 @@
 import { ClienteAdminService } from './services/ClienteAdminService';
-import { Router } from 'express';
+import { Router, Request, Response } from 'express';
 import { ClienteAdminController } from './controller/ClienteAdminController';
 
 
@@ -7,13 +7,13 @@ const clientesAdminRouter = Router();
 
 const clientesAdminController = new ClienteAdminController();
 
-clientesAdminRouter.post('/clientes', async (req, res) => {
+clientesAdminRouter.post('/clientes', async (req: Request, res: Response) => {
     const cliente = req.body;
     const createdCliente = await clientesAdminController.create(cliente);
     res.status(201).json(createdCliente);
 });
 
-clientesAdminRouter.get('/clientes/:id', async (req, res) => {
+clientesAdminRouter.get('/clientes/:id', async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const cliente = await clientesAdminController.findById(id);
     if (cliente) {
@@ -23,7 +23,7 @@ clientesAdminRouter.get('/clientes/:id', async (req, res) => {
     }
 });
 
-clientesAdminRouter.put('/clientes/:id', async (req, res) => {
+clientesAdminRouter.put('/clientes/:id', async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     const cliente = req.body;
     const updatedCliente = await clientesAdminController.update(id, cliente);
@@ -34,7 +34,7 @@ clientesAdminRouter.put('/clientes/:id', async (req, res) => {
     }
 });
 
-clientesAdminRouter.delete('/clientes/:id', async (req, res) => {
+clientesAdminRouter.delete('/clientes/:id', async (req: Request, res: Response) => {
     const id = Number(req.params.id);
     await clientesAdminController.delete(id);
     res.status(204).send();
