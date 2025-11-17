@@ -5,44 +5,75 @@ import { runWithTenant, TenantStore } from './tenant-context';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-export class TenantTokenError extends Error {
+function normalizarCnpj(valor: string): string {
+  return valor.replace(/\D/g, '');
+}
+
+export class TenantResolverError extends Error {
   constructor(public readonly statusCode: number, message: string) {
     super(message);
-    this.name = 'TenantTokenError';
+    this.name = 'TenantResolverError';
   }
 }
 
-async function carregarContextoTenant(tokenInformado: string): Promise<TenantStore> {
+async function carregarContextoTenantPorToken(tokenInformado: string): Promise<TenantStore> {
   const token = tokenInformado.trim();
 
   if (!token) {
-    throw new TenantTokenError(400, 'Token do tenant é obrigatório.');
+    throw new TenantResolverError(400, 'Token do tenant é obrigatório.');
   }
 
   if (!UUID_RE.test(token)) {
-    throw new TenantTokenError(400, 'Token do tenant inválido.');
+    throw new TenantResolverError(400, 'Token do tenant inválido.');
   }
 
   const repositorioTenants = MasterDataSource.getRepository(Tenant);
   const tenant = await repositorioTenants.findOne({ where: { token } });
 
   if (!tenant) {
-    throw new TenantTokenError(404, 'Tenant não encontrado.');
+    throw new TenantResolverError(404, 'Tenant não encontrado.');
   }
 
   if (!tenant.isActive) {
-    throw new TenantTokenError(403, 'Tenant inativo.');
+    throw new TenantResolverError(403, 'Tenant inativo.');
   }
 
   const dataSource = await tenantDSManager.getOrCreate(tenant);
   return { tenant, dataSource };
 }
 
-export async function executarNoTenantPorToken<T>(
-  token: string,
+async function carregarContextoTenantPorCnpj(cnpjInformado: string): Promise<TenantStore> {
+  const cnpj = normalizarCnpj(cnpjInformado);
+
+  if (!cnpj) {
+    throw new TenantResolverError(400, 'CNPJ é obrigatório para autenticação.');
+  }
+
+  if (cnpj.length !== 14) {
+    throw new TenantResolverError(400, 'CNPJ inválido para autenticação.');
+  }
+
+  const repositorioTenants = MasterDataSource.getRepository(Tenant);
+  const tenant = await repositorioTenants.findOne({ where: { cnpj } });
+
+  if (!tenant) {
+    throw new TenantResolverError(404, 'Tenant não encontrado para o CNPJ informado.');
+  }
+
+  if (!tenant.isActive) {
+    throw new TenantResolverError(403, 'Tenant inativo.');
+  }
+
+  const dataSource = await tenantDSManager.getOrCreate(tenant);
+  return { tenant, dataSource };
+}
+
+async function executarNoTenant<T>(
+  carregador: (identificador: string) => Promise<TenantStore>,
+  identificador: string,
   callback: () => Promise<T>
 ): Promise<T> {
-  const contexto = await carregarContextoTenant(token);
+  const contexto = await carregador(identificador);
 
   return new Promise<T>((resolve, reject) => {
     runWithTenant(contexto, () => {
@@ -51,4 +82,12 @@ export async function executarNoTenantPorToken<T>(
   });
 }
 
-export { carregarContextoTenant };
+export function executarNoTenantPorToken<T>(token: string, callback: () => Promise<T>): Promise<T> {
+  return executarNoTenant(carregarContextoTenantPorToken, token, callback);
+}
+
+export function executarNoTenantPorCnpj<T>(cnpj: string, callback: () => Promise<T>): Promise<T> {
+  return executarNoTenant(carregarContextoTenantPorCnpj, cnpj, callback);
+}
+
+export { carregarContextoTenantPorToken as carregarContextoTenant, TenantStore };

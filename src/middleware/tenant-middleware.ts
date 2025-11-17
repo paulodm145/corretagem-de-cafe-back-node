@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express';
 import { runWithTenant } from '../tenancy/tenant-context';
-import { carregarContextoTenant, TenantTokenError } from '../tenancy/tenant-token-resolver';
+import { carregarContextoTenant, TenantResolverError } from '../tenancy/tenant-token-resolver';
 
 export async function tenantMiddleware(req: Request, res: Response, next: NextFunction) {
   try {
@@ -8,7 +8,7 @@ export async function tenantMiddleware(req: Request, res: Response, next: NextFu
     const contexto = await carregarContextoTenant(token);
     runWithTenant(contexto, () => next());
   } catch (erro: any) {
-    if (erro instanceof TenantTokenError) {
+    if (erro instanceof TenantResolverError) {
       const mensagemErro = erro.statusCode === 400 ? 'x-tenant-token inválido/ausente' : erro.message;
       return res.status(erro.statusCode).json({ error: mensagemErro });
     }

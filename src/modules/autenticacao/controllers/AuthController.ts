@@ -1,35 +1,33 @@
 import { Request, Response } from 'express';
 import { UsuarioRepository } from '../../usuarios/repositories/UsuarioRepository';
 import { ZodError, z } from 'zod';
-import { executarNoTenantPorToken, TenantTokenError } from '../../../tenancy/tenant-token-resolver';
+import { executarNoTenantPorCnpj, TenantResolverError } from '../../../tenancy/tenant-token-resolver';
 import { AuthService } from '../services/AuthService';
 
 const authService = new AuthService(new UsuarioRepository());
-const tenantTokenSchema = z.object({
-  tenantToken: z
+const tenantCnpjSchema = z.object({
+  cnpj: z
     .string()
     .trim()
-    .min(1, 'Token do tenant é obrigatório para login.')
-    .uuid('Token do tenant inválido.'),
+    .min(1, 'CNPJ é obrigatório para login.')
+    .transform((valor) => valor.replace(/\D/g, ''))
+    .refine((valor) => valor.length === 14, 'CNPJ inválido para login.'),
 });
 
 export class AuthController {
   login = async (req: Request, res: Response): Promise<Response> => {
     try {
-      const tokenInformado =
-        (typeof req.body?.tenantToken === 'string' && req.body.tenantToken) ||
-        req.header('x-tenant-token') ||
-        '';
-      const { tenantToken } = tenantTokenSchema.parse({ tenantToken: tokenInformado });
+      const cnpjInformado = typeof req.body?.cnpj === 'string' ? req.body.cnpj : '';
+      const { cnpj } = tenantCnpjSchema.parse({ cnpj: cnpjInformado });
 
-      const resultado = await executarNoTenantPorToken(tenantToken, () => authService.autenticar(req.body));
+      const resultado = await executarNoTenantPorCnpj(cnpj, () => authService.autenticar(req.body));
       return res.json(resultado);
     } catch (erro) {
       if (erro instanceof ZodError) {
         const mensagem = erro.issues.map((issue) => issue.message).join(' ');
         return res.status(400).json({ mensagem });
       }
-      if (erro instanceof TenantTokenError) {
+      if (erro instanceof TenantResolverError) {
         return res.status(erro.statusCode).json({ mensagem: erro.message });
       }
       if (erro instanceof Error) {

@@ -54,17 +54,17 @@ Rotas públicas destinadas ao gerenciamento de tenants na base "core".
 ### Rotas autenticadas por tenant
 Para acessar os recursos de domínio:
 
-1. Tenha em mãos o `tenantToken` (UUID) fornecido na criação do tenant.
-2. Autentique-se via `POST /auth/login`, informando o `tenantToken` diretamente no corpo (o cabeçalho `x-tenant-token` é opcional apenas para essa rota).
+1. Tenha em mãos o `tenantToken` (UUID) fornecido na criação do tenant (ele continuará sendo exigido nas rotas autenticadas após o login).
+2. Autentique-se via `POST /auth/login`, informando o `cnpj`, `email` e `senha`. O tenant será identificado apenas pelo CNPJ, dispensando o cabeçalho `x-tenant-token` nessa etapa.
 3. Utilize `x-tenant-token` e `Authorization: Bearer <token>` em todas as requisições subsequentes às rotas protegidas.
 
 #### POST `/auth/login`
-- **Descrição:** Realiza a autenticação de usuários do tenant resolvendo automaticamente o contexto do tenant a partir do `tenantToken` informado.
-- **Headers:** `x-tenant-token` (opcional, apenas se preferir enviar o token via cabeçalho).
+- **Descrição:** Realiza a autenticação de usuários do tenant resolvendo automaticamente o contexto do tenant a partir do `cnpj` informado.
+- **Headers:** Não requer `x-tenant-token`.
 - **Corpo (JSON):**
   ```json
   {
-    "tenantToken": "0bbcb686-1dd2-4bd4-8a9d-dfa5b192d099",
+    "cnpj": "12345678000199",
     "email": "admin@empresa.com",
     "senha": "Senha@123"
   }
@@ -81,7 +81,7 @@ Para acessar os recursos de domínio:
   }
   ```
 - **Observações:**
-  - Caso envie o `tenantToken` no corpo, não é necessário enviar o cabeçalho `x-tenant-token` durante o login.
+  - O campo `cnpj` aceita valores com ou sem formatação; apenas os dígitos serão considerados.
   - O token expira conforme `AUTH_EXPIRES_IN`.
   - O payload do JWT inclui `tenantToken` e será validado junto ao `x-tenant-token` em cada requisição protegida.
 
