@@ -20,6 +20,24 @@
 
 Todas as rotas retornam respostas em JSON.
 
+### Convenção de respostas de erro
+
+Independentemente do módulo, os erros retornam o seguinte formato padronizado:
+
+```json
+{
+  "codigo": "ERRO_VALIDACAO",
+  "mensagem": "Há dados inválidos no payload enviado.",
+  "detalhes": ["Descrição é obrigatória."]
+}
+```
+
+- `codigo` pode assumir os valores `ERRO_VALIDACAO`, `ERRO_NEGOCIO`, `NAO_ENCONTRADO` ou `ERRO_INTERNO`.
+- `mensagem` descreve o motivo do erro em linguagem natural.
+- `detalhes` é opcional e traz a lista de validações quebradas quando aplicável.
+
+O front-end pode se basear nesses códigos para tratar fluxos específicos (ex.: destacar campos com erro de validação, exibir alertas de autorização, etc.).
+
 ### Rotas públicas (core)
 
 #### GET `/health`
@@ -181,6 +199,40 @@ Controla os tipos de embalagens utilizados pelos embarques de café.
 
 ##### DELETE `/tipos-sacaria/{id}`
 - **Descrição:** Remove um tipo de sacaria.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Observações Fiscais
+Cadastro das observações fiscais que podem ser anexadas às notas, separadas por tipo de destinatário.
+
+##### GET `/observacoes-fiscais`
+- **Descrição:** Lista todas as observações fiscais cadastradas para o tenant.
+
+##### GET `/observacoes-fiscais/tipo/{tipo}`
+- **Descrição:** Lista as observações filtrando diretamente pelo tipo (`PRODUTOR` ou `EMPRESAS`).
+- **Observação:** O parâmetro `tipo` é case insensitive, mas será normalizado para maiúsculas internamente.
+
+##### GET `/observacoes-fiscais/{id}`
+- **Descrição:** Detalha uma observação fiscal pelo identificador numérico.
+
+##### POST `/observacoes-fiscais`
+- **Descrição:** Cria uma nova observação fiscal.
+- **Corpo (JSON):**
+  ```json
+  {
+    "descricao": "Texto que será impresso na nota fiscal.",
+    "tipo": "PRODUTOR"
+  }
+  ```
+- **Regras:**
+  - `descricao` obrigatório, mínimo 5 caracteres, aceita textos longos.
+  - `tipo` obrigatório e deve ser `PRODUTOR` ou `EMPRESAS` (sempre em maiúsculo).
+
+##### PUT `/observacoes-fiscais/{id}`
+- **Descrição:** Atualiza a descrição, o tipo ou ambos para uma observação existente.
+- **Corpo (JSON):** Qualquer combinação válida de `descricao` e `tipo` respeitando as regras acima.
+
+##### DELETE `/observacoes-fiscais/{id}`
+- **Descrição:** Remove uma observação fiscal.
 - **Resposta 204:** Sem corpo.
 
 ## Payloads e Configurações do Projeto

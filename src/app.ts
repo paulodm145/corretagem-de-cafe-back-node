@@ -10,6 +10,7 @@ import { usuarioRouter } from './modules/usuarios/routes';
 import { authRouter } from './modules/autenticacao/routes';
 import { authMiddleware } from './middleware/auth-middleware';
 import { tipoSacariaRouter } from './modules/tiposSacaria/routes';
+import { observacaoFiscalRouter } from './modules/observacoesFiscais/routes';
 
 config();
 
@@ -30,6 +31,7 @@ rotasProtegidas.use(cidadeRouter);
 rotasProtegidas.use(produtoRouter);
 rotasProtegidas.use(usuarioRouter);
 rotasProtegidas.use(tipoSacariaRouter);
+rotasProtegidas.use(observacaoFiscalRouter);
 
 rotasTenant.use(rotasProtegidas);
 

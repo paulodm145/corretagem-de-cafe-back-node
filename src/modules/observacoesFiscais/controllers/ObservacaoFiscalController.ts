@@ -1,15 +1,25 @@
 import { Request, Response } from 'express';
 import { responderComErroPadrao } from '../../../utils/respostaErroPadrao';
-import { UsuarioRepository } from '../repositories/UsuarioRepository';
-import { UsuarioService } from '../services/UsuarioService';
+import { ObservacaoFiscalRepository } from '../repositories/ObservacaoFiscalRepository';
+import { ObservacaoFiscalService } from '../services/ObservacaoFiscalService';
 
-const usuarioService = new UsuarioService(new UsuarioRepository());
+const observacaoFiscalService = new ObservacaoFiscalService(new ObservacaoFiscalRepository());
 
-export class UsuarioController {
+export class ObservacaoFiscalController {
   listar = async (_req: Request, res: Response): Promise<Response> => {
     try {
-      const usuarios = await usuarioService.listar();
-      return res.json(usuarios);
+      const observacoes = await observacaoFiscalService.listar();
+      return res.json(observacoes);
+    } catch (erro) {
+      return responderComErroPadrao(res, erro);
+    }
+  };
+
+  listarPorTipo = async (req: Request, res: Response): Promise<Response> => {
+    try {
+      const { tipo } = req.params;
+      const observacoes = await observacaoFiscalService.listarPorTipo(tipo);
+      return res.json(observacoes);
     } catch (erro) {
       return responderComErroPadrao(res, erro);
     }
@@ -18,8 +28,8 @@ export class UsuarioController {
   buscarPorId = async (req: Request, res: Response): Promise<Response> => {
     try {
       const id = this.obterIdParam(req.params.id);
-      const usuario = await usuarioService.buscarPorId(id);
-      return res.json(usuario);
+      const observacao = await observacaoFiscalService.buscarPorId(id);
+      return res.json(observacao);
     } catch (erro) {
       return responderComErroPadrao(res, erro);
     }
@@ -27,8 +37,8 @@ export class UsuarioController {
 
   criar = async (req: Request, res: Response): Promise<Response> => {
     try {
-      const usuario = await usuarioService.criar(req.body);
-      return res.status(201).json(usuario);
+      const criado = await observacaoFiscalService.criar(req.body);
+      return res.status(201).json(criado);
     } catch (erro) {
       return responderComErroPadrao(res, erro);
     }
@@ -37,8 +47,8 @@ export class UsuarioController {
   atualizar = async (req: Request, res: Response): Promise<Response> => {
     try {
       const id = this.obterIdParam(req.params.id);
-      const usuario = await usuarioService.atualizar(id, req.body);
-      return res.json(usuario);
+      const atualizado = await observacaoFiscalService.atualizar(id, req.body);
+      return res.json(atualizado);
     } catch (erro) {
       return responderComErroPadrao(res, erro);
     }
@@ -47,7 +57,7 @@ export class UsuarioController {
   remover = async (req: Request, res: Response): Promise<Response> => {
     try {
       const id = this.obterIdParam(req.params.id);
-      await usuarioService.remover(id);
+      await observacaoFiscalService.remover(id);
       return res.status(204).send();
     } catch (erro) {
       return responderComErroPadrao(res, erro);

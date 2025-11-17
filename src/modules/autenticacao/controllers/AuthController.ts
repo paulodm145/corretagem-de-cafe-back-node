@@ -1,7 +1,8 @@
 import { Request, Response } from 'express';
+import { z } from 'zod';
 import { UsuarioRepository } from '../../usuarios/repositories/UsuarioRepository';
-import { ZodError, z } from 'zod';
-import { executarNoTenantPorCnpj, TenantResolverError } from '../../../tenancy/tenant-token-resolver';
+import { executarNoTenantPorCnpj } from '../../../tenancy/tenant-token-resolver';
+import { responderComErroPadrao } from '../../../utils/respostaErroPadrao';
 import { AuthService } from '../services/AuthService';
 
 const authService = new AuthService(new UsuarioRepository());
@@ -23,18 +24,7 @@ export class AuthController {
       const resultado = await executarNoTenantPorCnpj(cnpj, () => authService.autenticar(req.body));
       return res.json(resultado);
     } catch (erro) {
-      if (erro instanceof ZodError) {
-        const mensagem = erro.issues.map((issue) => issue.message).join(' ');
-        return res.status(400).json({ mensagem });
-      }
-      if (erro instanceof TenantResolverError) {
-        return res.status(erro.statusCode).json({ mensagem: erro.message });
-      }
-      if (erro instanceof Error) {
-        return res.status(401).json({ mensagem: erro.message });
-      }
-
-      return res.status(500).json({ mensagem: 'Erro ao autenticar.' });
+      return responderComErroPadrao(res, erro);
     }
   };
 }

@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { responderComErroPadrao } from '../../../utils/respostaErroPadrao';
 import { TenantRepository } from '../repositories/TenantRepository';
 import { TenantService } from '../services/TenantService';
 
@@ -10,7 +11,7 @@ export class TenantController {
       const tenants = await tenantService.listar();
       return response.json(tenants);
     } catch (error) {
-      return this.responderErro(response, error);
+      return responderComErroPadrao(response, error);
     }
   };
 
@@ -20,7 +21,7 @@ export class TenantController {
       const tenant = await tenantService.buscarPorId(id);
       return response.json(tenant);
     } catch (error) {
-      return this.responderErro(response, error);
+      return responderComErroPadrao(response, error);
     }
   };
 
@@ -29,7 +30,7 @@ export class TenantController {
       const novoTenant = await tenantService.criar(request.body);
       return response.status(201).json(novoTenant);
     } catch (error) {
-      return this.responderErro(response, error);
+      return responderComErroPadrao(response, error);
     }
   };
 
@@ -39,7 +40,7 @@ export class TenantController {
       const tenantAtualizado = await tenantService.atualizar(id, request.body);
       return response.json(tenantAtualizado);
     } catch (error) {
-      return this.responderErro(response, error);
+      return responderComErroPadrao(response, error);
     }
   };
 
@@ -49,23 +50,7 @@ export class TenantController {
       await tenantService.remover(id);
       return response.status(204).send();
     } catch (error) {
-      return this.responderErro(response, error);
+      return responderComErroPadrao(response, error);
     }
   };
-
-  private responderErro(response: Response, error: unknown): Response {
-    if (error instanceof Error && error.message.includes('não encontrado')) {
-      return response
-        .status(404)
-        .json({ mensagem: error.message, line: error.stack, file: __filename });
-    }
-
-    if (error instanceof Error) {
-      return response
-        .status(400)
-        .json({ mensagem: error.message, line: error.stack, file: __filename });
-    }
-
-    return response.status(500).json({ mensagem: 'Erro interno ao processar a solicitação.' });
-  }
 }

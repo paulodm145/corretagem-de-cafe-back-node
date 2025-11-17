@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import { responderComErroPadrao } from '../../../utils/respostaErroPadrao';
 import { TipoSacariaRepository } from '../repositories/TipoSacariaRepository';
 import { TipoSacariaService } from '../services/TipoSacariaService';
 
@@ -10,7 +11,7 @@ export class TipoSacariaController {
       const tipos = await tipoSacariaService.listar();
       return response.json(tipos);
     } catch (erro) {
-      return this.responderErro(response, erro);
+      return responderComErroPadrao(response, erro);
     }
   };
 
@@ -20,7 +21,7 @@ export class TipoSacariaController {
       const tipo = await tipoSacariaService.buscarPorId(id);
       return response.json(tipo);
     } catch (erro) {
-      return this.responderErro(response, erro);
+      return responderComErroPadrao(response, erro);
     }
   };
 
@@ -29,7 +30,7 @@ export class TipoSacariaController {
       const criado = await tipoSacariaService.criar(request.body);
       return response.status(201).json(criado);
     } catch (erro) {
-      return this.responderErro(response, erro);
+      return responderComErroPadrao(response, erro);
     }
   };
 
@@ -39,7 +40,7 @@ export class TipoSacariaController {
       const atualizado = await tipoSacariaService.atualizar(id, request.body);
       return response.json(atualizado);
     } catch (erro) {
-      return this.responderErro(response, erro);
+      return responderComErroPadrao(response, erro);
     }
   };
 
@@ -49,21 +50,9 @@ export class TipoSacariaController {
       await tipoSacariaService.remover(id);
       return response.status(204).send();
     } catch (erro) {
-      return this.responderErro(response, erro);
+      return responderComErroPadrao(response, erro);
     }
   };
-
-  private responderErro(response: Response, erro: unknown): Response {
-    if (erro instanceof Error && erro.message.includes('não encontrado')) {
-      return response.status(404).json({ mensagem: erro.message });
-    }
-
-    if (erro instanceof Error) {
-      return response.status(400).json({ mensagem: erro.message });
-    }
-
-    return response.status(500).json({ mensagem: 'Erro interno ao processar a requisição.' });
-  }
 
   private obterIdParam(param: string): number {
     const id = Number(param);
