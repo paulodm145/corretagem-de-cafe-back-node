@@ -365,6 +365,50 @@ Pontos de recebimento vinculados a um cliente. Úteis para controlar para onde o
 - **Descrição:** Remove um local de descarga.
 - **Resposta 204:** Sem corpo.
 
+#### CRUD de Contas Bancárias
+Armazena os dados bancários e chaves PIX vinculados aos clientes do tenant. Sempre informe um `clienteId` válido e um `bancoId` existente (consulte o CRUD de bancos). Os campos de lista aceitam o valor em texto ou o respectivo código numérico:
+
+- `tipoConta`: `CORRENTE` (`1`), `POUPANCA` (`2`), `SALARIO` (`3`) ou `PAGAMENTO` (`4`).
+- `tipoChavePix`: `CPF` (`1`), `CNPJ` (`2`), `EMAIL` (`3`), `TELEFONE` (`4`) ou `ALEATORIA` (`5`).
+
+##### GET `/contas-bancarias`
+- **Descrição:** Lista todas as contas bancárias cadastradas no tenant ordenadas pelo identificador.
+
+##### GET `/contas-bancarias/{id}`
+- **Descrição:** Detalha uma conta bancária específica.
+
+##### GET `/contas-bancarias/cliente/{clienteId}`
+- **Descrição:** Lista apenas as contas vinculadas ao cliente informado.
+- **Parâmetros de rota:** `clienteId` inteiro maior que zero.
+
+##### POST `/contas-bancarias`
+- **Descrição:** Cria uma conta bancária.
+- **Corpo (JSON):**
+  ```json
+  {
+    "clienteId": 1,
+    "bancoId": 10,
+    "agencia": "1234",
+    "numeroConta": "1234567",
+    "digitoConta": "0",
+    "tipoConta": "CORRENTE",
+    "tipoChavePix": "CNPJ",
+    "chavePix": "12345678000199"
+  }
+  ```
+- **Regras principais:**
+  - `agencia` deve conter de 3 a 20 caracteres alfanuméricos (apenas dígitos/letras são persistidos).
+  - `numeroConta` deve conter de 3 a 30 caracteres alfanuméricos.
+  - `digitoConta` é opcional (1 a 5 caracteres) e é salvo em maiúsculas.
+  - `tipoConta`, `tipoChavePix` e `chavePix` são opcionais, mas `tipoChavePix` e `chavePix` devem ser enviados juntos.
+
+##### PUT `/contas-bancarias/{id}`
+- **Descrição:** Atualiza qualquer combinação dos campos do POST. O serviço valida os relacionamentos ao alterar `clienteId` ou `bancoId`.
+
+##### DELETE `/contas-bancarias/{id}`
+- **Descrição:** Remove uma conta bancária.
+- **Resposta 204:** Sem corpo.
+
 ## Payloads e Configurações do Projeto
 
 ### Variáveis de ambiente relacionadas a tenants e autenticação

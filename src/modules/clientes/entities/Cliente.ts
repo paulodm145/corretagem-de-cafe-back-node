@@ -3,6 +3,7 @@ import { AtuacaoCliente } from '../../../ENUMS/atuacaoCliente';
 import { TipoCompradorCliente } from '../../../ENUMS/tipoCompradorCliente';
 import { TipoPessoaCliente } from '../../../ENUMS/tipoPessoaCliente';
 import { LocalDescarga } from '../../locaisDescarga/entities/LocalDescarga';
+import { ContaBancaria } from '../../contasBancarias/entities/ContaBancaria';
 
 @Entity('clientes')
 export class Cliente {
@@ -94,4 +95,7 @@ export class Cliente {
 
   @OneToMany(() => LocalDescarga, (local) => local.cliente)
   locaisDescarga?: LocalDescarga[];
+
+  @OneToMany(() => ContaBancaria, (conta) => conta.cliente)
+  contasBancarias?: ContaBancaria[];
 }

@@ -14,6 +14,7 @@ import { observacaoFiscalRouter } from './modules/observacoesFiscais/routes';
 import { bancoRouter } from './modules/bancos/routes';
 import { clienteRouter } from './modules/clientes/routes';
 import { localDescargaRouter } from './modules/locaisDescarga/routes';
+import { contaBancariaRouter } from './modules/contasBancarias/routes';
 
 config();
 
@@ -38,6 +39,7 @@ rotasProtegidas.use(observacaoFiscalRouter);
 rotasProtegidas.use(bancoRouter);
 rotasProtegidas.use(clienteRouter);
 rotasProtegidas.use(localDescargaRouter);
+rotasProtegidas.use(contaBancariaRouter);
 
 rotasTenant.use(rotasProtegidas);
 

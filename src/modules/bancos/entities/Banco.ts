@@ -1,4 +1,5 @@
-import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToMany, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { ContaBancaria } from '../../contasBancarias/entities/ContaBancaria';
 
 @Entity('bancos')
 export class Banco {
@@ -22,4 +23,7 @@ export class Banco {
 
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
+
+  @OneToMany(() => ContaBancaria, (conta) => conta.banco)
+  contas?: ContaBancaria[];
 }
