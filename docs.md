@@ -276,6 +276,8 @@ Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos list
 - `tipoComprador`: `PRODUTOR` (`1`), `COMPRADOR` (`2`) ou `PRODUTOR_COMPRADOR` (`3`).
 - `atuacao`: `MERCADO_INTERNO` (`1`), `EXPORTADOR` (`2`), `TORREFADOR` (`3`) ou `CORRETOR` (`4`).
 
+> Todo cliente possui o campo booleano `ativo` (padrão `true`). Utilize a rota `PATCH /clientes/{id}/status` para ativar/desativar sem alterar os demais dados cadastrais.
+
 ##### GET `/clientes`
 - **Descrição:** Lista todos os clientes do tenant ordenados pelo nome.
 
@@ -318,6 +320,49 @@ Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos list
 
 ##### DELETE `/clientes/{id}`
 - **Descrição:** Remove um cliente.
+- **Resposta 204:** Sem corpo.
+
+##### PATCH `/clientes/{id}/status`
+- **Descrição:** Atualiza apenas o status ativo do cliente.
+- **Corpo (JSON):** `{ "ativo": true }`
+- **Regras:** `ativo` é obrigatório e deve ser booleano. Útil para bloquear/reativar clientes sem perder o histórico.
+
+#### CRUD de Locais de Descarga
+Pontos de recebimento vinculados a um cliente. Úteis para controlar para onde o café pode ser entregue. Todos os campos passam por validação com Zod e exigem que o `clienteId` exista.
+
+##### GET `/locais-descarga`
+- **Descrição:** Lista todos os locais de descarga do tenant ordenados por nome.
+
+##### GET `/locais-descarga/{id}`
+- **Descrição:** Detalha um local pelo identificador.
+
+##### GET `/locais-descarga/cliente/{clienteId}`
+- **Descrição:** Lista apenas os locais vinculados ao cliente informado.
+- **Parâmetros de rota:** `clienteId` inteiro maior que zero.
+
+##### POST `/locais-descarga`
+- **Descrição:** Cria um novo local de descarga vinculado a um cliente.
+- **Corpo (JSON):**
+  ```json
+  {
+    "clienteId": 1,
+    "nome": "Armazém Matriz",
+    "cep": "01001000",
+    "endereco": "Rua Exemplo",
+    "numero": "100",
+    "complemento": "Galpão 3",
+    "bairro": "Centro",
+    "uf": "SP",
+    "cidade": "São Paulo"
+  }
+  ```
+- **Regras principais:** `clienteId` deve existir; `nome`, `endereco`, `numero`, `bairro`, `uf`, `cidade` são obrigatórios; `cep` aceita qualquer formatação mas é salvo com 8 dígitos; `complemento` é opcional.
+
+##### PUT `/locais-descarga/{id}`
+- **Descrição:** Atualiza um local existente. Qualquer combinação de campos do POST pode ser enviada, desde que ao menos um esteja presente.
+
+##### DELETE `/locais-descarga/{id}`
+- **Descrição:** Remove um local de descarga.
 - **Resposta 204:** Sem corpo.
 
 ## Payloads e Configurações do Projeto

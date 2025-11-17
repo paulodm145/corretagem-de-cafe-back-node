@@ -1,7 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { AtuacaoCliente } from '../../../ENUMS/atuacaoCliente';
 import { TipoCompradorCliente } from '../../../ENUMS/tipoCompradorCliente';
 import { TipoPessoaCliente } from '../../../ENUMS/tipoPessoaCliente';
+import { LocalDescarga } from '../../locaisDescarga/entities/LocalDescarga';
 
 @Entity('clientes')
 export class Cliente {
@@ -77,6 +78,9 @@ export class Cliente {
   @Column({ name: 'numero_car', type: 'varchar', length: 30, nullable: true })
   numeroCar!: string | null;
 
+  @Column({ name: 'ativo', type: 'boolean', default: true })
+  ativo!: boolean;
+
   @Column({ name: 'created_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
@@ -87,4 +91,7 @@ export class Cliente {
     onUpdate: 'CURRENT_TIMESTAMP',
   })
   updatedAt!: Date;
+
+  @OneToMany(() => LocalDescarga, (local) => local.cliente)
+  locaisDescarga?: LocalDescarga[];
 }

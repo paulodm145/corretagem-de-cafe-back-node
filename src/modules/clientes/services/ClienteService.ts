@@ -157,6 +157,10 @@ const numeroCarSchema = z
   .optional()
   .transform((valor) => (valor ? valor : null));
 
+const alterarStatusSchema = z.object({
+  ativo: z.boolean(),
+});
+
 const clienteSchema = z
   .object({
     nome: nomeSchema,
@@ -226,6 +230,13 @@ export class ClienteService {
   async remover(id: number): Promise<void> {
     await this.buscarPorId(id);
     await this.clienteRepository.remover(id);
+  }
+
+  async atualizarStatus(id: number, payload: unknown): Promise<Cliente> {
+    const cliente = await this.buscarPorId(id);
+    const dados = alterarStatusSchema.parse(this.converterPayloadEmObjeto(payload));
+    cliente.ativo = dados.ativo;
+    return this.clienteRepository.salvar(cliente);
   }
 
   private validarPayload(payload: unknown, base?: Cliente): ClienteNormalizado {

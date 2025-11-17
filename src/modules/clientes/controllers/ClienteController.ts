@@ -54,6 +54,16 @@ export class ClienteController {
     }
   };
 
+  atualizarStatus = async (request: Request, response: Response): Promise<Response> => {
+    try {
+      const id = this.obterIdParam(request.params.id);
+      const cliente = await clienteService.atualizarStatus(id, request.body);
+      return response.json(cliente);
+    } catch (erro) {
+      return responderComErroPadrao(response, erro);
+    }
+  };
+
   private obterIdParam(param: string): number {
     const id = Number(param);
     if (!Number.isInteger(id) || id <= 0) {

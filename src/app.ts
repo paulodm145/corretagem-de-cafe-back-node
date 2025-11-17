@@ -13,6 +13,7 @@ import { tipoSacariaRouter } from './modules/tiposSacaria/routes';
 import { observacaoFiscalRouter } from './modules/observacoesFiscais/routes';
 import { bancoRouter } from './modules/bancos/routes';
 import { clienteRouter } from './modules/clientes/routes';
+import { localDescargaRouter } from './modules/locaisDescarga/routes';
 
 config();
 
@@ -36,6 +37,7 @@ rotasProtegidas.use(tipoSacariaRouter);
 rotasProtegidas.use(observacaoFiscalRouter);
 rotasProtegidas.use(bancoRouter);
 rotasProtegidas.use(clienteRouter);
+rotasProtegidas.use(localDescargaRouter);
 
 rotasTenant.use(rotasProtegidas);
 
