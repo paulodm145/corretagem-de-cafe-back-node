@@ -73,7 +73,7 @@ Para acessar os recursos de domínio:
   {
     "token": "jwt.assinado...",
     "usuario": {
-      "id": "<uuid>",
+      "id": 1,
       "nome": "Administrador",
       "email": "admin@empresa.com"
     }
@@ -90,7 +90,7 @@ Gerenciamento dos usuários do tenant que podem consumir a API.
 - **Descrição:** Lista todos os usuários do tenant.
 
 ##### GET `/usuarios/{id}`
-- **Descrição:** Retorna os detalhes de um usuário pelo UUID.
+- **Descrição:** Retorna os detalhes de um usuário pelo identificador numérico.
 
 ##### POST `/usuarios`
 - **Descrição:** Cria um novo usuário.
@@ -131,7 +131,7 @@ Gerenciamento dos usuários do tenant que podem consumir a API.
 - **Descrição:** Lista todos os produtos cadastrados no tenant ordenados por descrição.
 
 ##### GET `/produtos/{id}`
-- **Descrição:** Busca um produto específico pelo UUID.
+- **Descrição:** Busca um produto específico pelo identificador numérico.
 
 ##### POST `/produtos`
 - **Descrição:** Cria um novo produto.
@@ -149,6 +149,36 @@ Gerenciamento dos usuários do tenant que podem consumir a API.
 
 ##### DELETE `/produtos/{id}`
 - **Descrição:** Remove um produto do tenant.
+- **Resposta 204:** Sem corpo.
+
+#### CRUD de Tipos de Sacaria
+Controla os tipos de embalagens utilizados pelos embarques de café.
+
+##### GET `/tipos-sacaria`
+- **Descrição:** Lista todos os tipos de sacaria cadastrados no tenant ordenados por descrição.
+
+##### GET `/tipos-sacaria/{id}`
+- **Descrição:** Detalha um tipo de sacaria específico pelo identificador numérico.
+
+##### POST `/tipos-sacaria`
+- **Descrição:** Cria um novo tipo de sacaria.
+- **Corpo (JSON):**
+  ```json
+  {
+    "descricao": "Sacaria nova 60kg",
+    "ativo": true
+  }
+  ```
+- **Regras:**
+  - `descricao` obrigatório entre 3 e 150 caracteres.
+  - `ativo` é opcional e padrão `true`.
+
+##### PUT `/tipos-sacaria/{id}`
+- **Descrição:** Atualiza descrição ou status de um tipo de sacaria.
+- **Corpo (JSON):** Qualquer combinação dos campos `descricao` e `ativo` respeitando as regras acima.
+
+##### DELETE `/tipos-sacaria/{id}`
+- **Descrição:** Remove um tipo de sacaria.
 - **Resposta 204:** Sem corpo.
 
 ## Payloads e Configurações do Projeto
@@ -189,3 +219,7 @@ Gerenciamento dos usuários do tenant que podem consumir a API.
 - O e-mail padrão utiliza `emailContato` do tenant (quando disponível) ou `admin@<nome-do-tenant>.local`.
 - A senha utilizada é definida por `TENANT_USUARIO_SENHA_PADRAO` e registrada no log do processo de provisionamento/migração para facilitar o repasse ao cliente.
 - Recomenda-se alterar a senha imediatamente após o primeiro acesso via `/usuarios/{id}`.
+
+### Tipos de sacaria padrão por tenant
+- Após as migrações, o seeder garante até cinco tipos de sacaria/embalagens comuns (`Sacaria nova 60kg`, `Sacaria usada 60kg`, `Big bag 1000kg`, `Café granel ensacado`, `Carga a granel`).
+- O seeder apenas insere as descrições que ainda não existirem, permitindo personalização sem sobrescrever registros.
