@@ -13,6 +13,8 @@ import { Estado } from '../../estados/entities/Estado';
 import { importarDadosIbgeNoDataSource } from '../../ibge/importador-ibge';
 import { Tenant } from '../entities/Tenant';
 import { TenantRepository } from '../repositories/TenantRepository';
+import { garantirUsuarioPadrao } from '../../usuarios/seeders/usuarioPadraoSeeder';
+import { garantirTiposSacariaPadrao } from '../../tiposSacaria/seeders/tiposSacariaPadraoSeeder';
 
 const TAMANHO_MAXIMO_IDENTIFICADOR = 63; // limite do PostgreSQL
 
@@ -344,6 +346,11 @@ export class TenantService {
     const dataSourceTenant = await tenantDSManager.obterDataSourceComMigracoes(tenant);
 
     await this.popularEstadosECidades(dataSourceTenant);
+    await garantirUsuarioPadrao(dataSourceTenant, {
+      nomeTenant: tenant.nomeFantasia || tenant.name,
+      emailContato: tenant.emailContato,
+    });
+    await garantirTiposSacariaPadrao(dataSourceTenant);
   }
 
   private async instalarExtensoesObrigatorias(configuracao: DetalhesCompletosBanco): Promise<void> {

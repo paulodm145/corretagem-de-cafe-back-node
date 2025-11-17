@@ -2,6 +2,8 @@ import 'reflect-metadata';
 import { MasterDataSource } from '../config/master-data-source';
 import { tenantDSManager } from '../tenancy/TenantDataSourceManager';
 import { TenantRepository } from '../modules/tenants/repositories/TenantRepository';
+import { garantirUsuarioPadrao } from '../modules/usuarios/seeders/usuarioPadraoSeeder';
+import { garantirTiposSacariaPadrao } from '../modules/tiposSacaria/seeders/tiposSacariaPadraoSeeder';
 
 async function executarMigracoesTenants() {
   let houveErro = false;
@@ -22,7 +24,12 @@ async function executarMigracoesTenants() {
 
     for (const tenant of tenants) {
       try {
-        await tenantDSManager.obterDataSourceComMigracoes(tenant);
+        const dataSource = await tenantDSManager.obterDataSourceComMigracoes(tenant);
+        await garantirUsuarioPadrao(dataSource, {
+          nomeTenant: tenant.nomeFantasia || tenant.name,
+          emailContato: tenant.emailContato,
+        });
+        await garantirTiposSacariaPadrao(dataSource);
         console.log(`Migrações aplicadas para o tenant ${tenant.nomeFantasia} (${tenant.token}).`);
       } catch (erro) {
         houveErro = true;

@@ -8,10 +8,10 @@ export class CreateProdutos1756598814974 implements MigrationInterface {
         columns: [
           {
             name: 'id',
-            type: 'uuid',
+            type: 'integer',
             isPrimary: true,
-            generationStrategy: 'uuid',
-            default: 'uuid_generate_v4()'
+            isGenerated: true,
+            generationStrategy: 'increment',
           },
           {
             name: 'descricao',
