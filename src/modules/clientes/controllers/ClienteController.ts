@@ -6,9 +6,9 @@ import { ClienteService } from '../services/ClienteService';
 const clienteService = new ClienteService(new ClienteRepository());
 
 export class ClienteController {
-  listar = async (_request: Request, response: Response): Promise<Response> => {
+  listar = async (request: Request, response: Response): Promise<Response> => {
     try {
-      const clientes = await clienteService.listar();
+      const clientes = await clienteService.listar(request.query);
       return response.json(clientes);
     } catch (erro) {
       return responderComErroPadrao(response, erro);

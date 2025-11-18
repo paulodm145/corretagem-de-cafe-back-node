@@ -22,6 +22,30 @@
 
 Todas as rotas retornam respostas em JSON.
 
+### Convenção de paginação e busca
+
+As listagens que suportam grandes volumes (`/clientes` e `/vendas`) utilizam um padrão único de paginação e retorno:
+
+- **Parâmetros de query:**
+  - `pagina`: inteiro >= 1 (padrão `1`).
+  - `limite`: inteiro entre 1 e 100 (padrão `20`).
+  - `ordenarPor`: campo permitido por rota (ex.: `nome`, `documento` em clientes).
+  - `ordenacao`: `ASC` ou `DESC` (padrão `ASC`).
+  - `busca`: texto livre usado para pesquisar pelos campos suportados pela listagem.
+- **Resposta padrão:**
+
+```json
+{
+  "dados": [],
+  "pagina": 1,
+  "limite": 20,
+  "total": 0,
+  "totalPaginas": 1
+}
+```
+
+> O campo `dados` contém o array da entidade solicitada. Os demais campos informam o estado da paginação para facilitar a construção de componentes de navegação no front-end.
+
 ### Convenção de respostas de erro
 
 Independentemente do módulo, os erros retornam o seguinte formato padronizado:
@@ -280,7 +304,8 @@ Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos list
 > Todo cliente possui o campo booleano `ativo` (padrão `true`). Utilize a rota `PATCH /clientes/{id}/status` para ativar/desativar sem alterar os demais dados cadastrais.
 
 ##### GET `/clientes`
-- **Descrição:** Lista todos os clientes do tenant ordenados pelo nome.
+- **Descrição:** Lista os clientes do tenant aplicando paginação, ordenação (`nome`, `documento` ou `createdAt`) e busca textual por nome, cidade ou documento.
+- **Parâmetros de query:** segue o [padrão de paginação](#conven%C3%A7%C3%A3o-de-pagina%C3%A7%C3%A3o-e-busca).
 
 ##### GET `/clientes/{id}`
 - **Descrição:** Detalha um cliente específico pelo identificador.
@@ -327,6 +352,41 @@ Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos list
 - **Descrição:** Atualiza apenas o status ativo do cliente.
 - **Corpo (JSON):** `{ "ativo": true }`
 - **Regras:** `ativo` é obrigatório e deve ser booleano. Útil para bloquear/reativar clientes sem perder o histórico.
+
+#### Listagem geral de Vendas
+
+##### GET `/vendas`
+- **Descrição:** Retorna as vendas cadastradas aplicando o mesmo padrão de paginação do CRUD de clientes.
+- **Parâmetros de query:** `pagina`, `limite`, `ordenarPor` (`dataVenda`, `numeroContrato`, `status`, `clienteNome` ou `createdAt`), `ordenacao` e `busca` (filtra por número do contrato, status ou nome do cliente).
+- **Resposta 200:**
+  ```json
+  {
+    "dados": [
+      {
+        "id": 15,
+        "numeroContrato": "VEN-2025/0015",
+        "clienteId": 2,
+        "produto": "Café arábica",
+        "quantidadeSacas": 150,
+        "precoMedio": "1020.50",
+        "status": "ABERTA",
+        "dataVenda": "2025-02-10",
+        "observacoes": null,
+        "createdAt": "2025-02-10T10:30:00.000Z",
+        "updatedAt": "2025-02-10T10:30:00.000Z",
+        "cliente": {
+          "id": 2,
+          "nome": "Fazenda Santa Clara"
+        }
+      }
+    ],
+    "pagina": 1,
+    "limite": 20,
+    "total": 1,
+    "totalPaginas": 1
+  }
+  ```
+- **Observações:** o relacionamento com clientes é retornado apenas com os campos essenciais para identificação (`id` e `nome`).
 
 #### CRUD de Locais de Descarga
 Pontos de recebimento vinculados a um cliente. Úteis para controlar para onde o café pode ser entregue. Todos os campos passam por validação com Zod e exigem que o `clienteId` exista.

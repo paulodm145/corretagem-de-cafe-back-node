@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { AtuacaoCliente, mapaCodigoParaAtuacaoCliente } from '../../../ENUMS/atuacaoCliente';
 import { TipoCompradorCliente, mapaCodigoParaTipoCompradorCliente } from '../../../ENUMS/tipoCompradorCliente';
 import { TipoPessoaCliente, mapaCodigoParaTipoPessoaCliente } from '../../../ENUMS/tipoPessoaCliente';
+import { ListaPaginada, criarSchemaListagem } from '../../../utils/paginacao';
 import { Cliente } from '../entities/Cliente';
 import { IClienteRepository } from '../repositories/IClienteRepository';
 
@@ -193,11 +194,17 @@ const clienteSchema = z
 
 type ClienteNormalizado = z.infer<typeof clienteSchema>;
 
+const parametrosListagemClientesSchema = criarSchemaListagem({
+  camposOrdenacao: ['nome', 'documento', 'createdAt'],
+  ordenarPorPadrao: 'nome',
+});
+
 export class ClienteService {
   constructor(private readonly clienteRepository: IClienteRepository) {}
 
-  async listar(): Promise<Cliente[]> {
-    return this.clienteRepository.listar();
+  async listar(parametros?: unknown): Promise<ListaPaginada<Cliente>> {
+    const filtros = parametrosListagemClientesSchema.parse(this.converterPayloadEmObjeto(parametros));
+    return this.clienteRepository.listar(filtros);
   }
 
   async buscarPorId(id: number): Promise<Cliente> {
