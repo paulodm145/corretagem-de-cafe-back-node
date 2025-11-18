@@ -18,10 +18,16 @@ export class CreateFormasPagamentoTable1757003000000 implements MigrationInterfa
             generationStrategy: 'increment',
           },
           {
+            name: 'nome',
+            type: 'varchar',
+            length: '120',
+            isUnique: true,
+          },
+          {
             name: 'descricao',
             type: 'varchar',
-            length: '150',
-            isNullable: false,
+            length: '255',
+            isNullable: true,
           },
           {
             name: 'created_at',
