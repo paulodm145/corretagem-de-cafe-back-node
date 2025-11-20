@@ -5,6 +5,8 @@ import { TipoPessoaCliente, mapaCodigoParaTipoPessoaCliente } from '../../../ENU
 import { ListaPaginada, criarSchemaListagem } from '../../../utils/paginacao';
 import { Cliente } from '../entities/Cliente';
 import { IClienteRepository } from '../repositories/IClienteRepository';
+import { EstadoRepository } from '../../estados/repositories/Estadorepository';
+import { CidadeRepository } from '../../cidades/repositories/CidadeRepository';
 
 const VALOR_MAX_OBSERVACAO = 4000;
 
@@ -118,17 +120,10 @@ const bairroSchema = z
   .min(2, 'Bairro deve possuir ao menos 2 caracteres.')
   .max(120, 'Bairro deve possuir no máximo 120 caracteres.');
 
-const ufSchema = z
-  .string()
-  .trim()
-  .transform((valor) => valor.toUpperCase())
-  .refine((valor) => /^[A-Z]{2}$/.test(valor), 'UF deve possuir duas letras.');
-
-const cidadeSchema = z
-  .string()
-  .trim()
-  .min(2, 'Cidade deve possuir ao menos 2 caracteres.')
-  .max(120, 'Cidade deve possuir no máximo 120 caracteres.');
+const numeroPositivoSchema = z
+  .union([z.string(), z.number()])
+  .transform((valor) => Number(valor))
+  .refine((valor) => Number.isInteger(valor) && valor > 0, 'Identificador inválido.');
 
 const emailSchema = z
   .string()
@@ -176,8 +171,8 @@ const clienteSchema = z
     numero: numeroSchema,
     complemento: complementoSchema,
     bairro: bairroSchema,
-    uf: ufSchema,
-    cidade: cidadeSchema,
+    estadoId: numeroPositivoSchema,
+    cidadeId: numeroPositivoSchema,
     email: emailSchema,
     telefone: telefoneSchema,
     observacao: observacaoSchema,
@@ -200,6 +195,9 @@ const parametrosListagemClientesSchema = criarSchemaListagem({
 });
 
 export class ClienteService {
+  private readonly estadoRepository = new EstadoRepository();
+  private readonly cidadeRepository = new CidadeRepository();
+
   constructor(private readonly clienteRepository: IClienteRepository) {}
 
   async listar(parametros?: unknown): Promise<ListaPaginada<Cliente>> {
@@ -218,6 +216,8 @@ export class ClienteService {
   async criar(payload: unknown): Promise<Cliente> {
     const dados = this.validarPayload(payload);
     await this.garantirDocumentoDisponivel(dados.documento);
+    await this.garantirEstadoExiste(dados.estadoId);
+    await this.garantirCidadeExiste(dados.cidadeId, dados.estadoId);
     return this.clienteRepository.criar(dados);
   }
 
@@ -228,6 +228,14 @@ export class ClienteService {
 
     if (dados.documento !== cliente.documento) {
       await this.garantirDocumentoDisponivel(dados.documento, cliente.id);
+    }
+
+    if (dados.estadoId !== cliente.estadoId) {
+      await this.garantirEstadoExiste(dados.estadoId);
+    }
+
+    if (dados.cidadeId !== cliente.cidadeId) {
+      await this.garantirCidadeExiste(dados.cidadeId, dados.estadoId ?? cliente.estadoId);
     }
 
     Object.assign(cliente, dados);
@@ -262,8 +270,8 @@ export class ClienteService {
           numero: base.numero,
           complemento: base.complemento,
           bairro: base.bairro,
-          uf: base.uf,
-          cidade: base.cidade,
+          estadoId: base.estadoId,
+          cidadeId: base.cidadeId,
           email: base.email,
           telefone: base.telefone,
           observacao: base.observacao,
@@ -292,6 +300,24 @@ export class ClienteService {
     const existente = await this.clienteRepository.buscarPorDocumento(documento);
     if (existente && existente.id !== ignorarId) {
       throw new Error('Já existe um cliente cadastrado com este documento.');
+    }
+  }
+
+  private async garantirEstadoExiste(id: number): Promise<void> {
+    const estado = await this.estadoRepository.findById(id);
+    if (!estado) {
+      throw new Error('Estado não encontrado.');
+    }
+  }
+
+  private async garantirCidadeExiste(id: number, estadoId?: number): Promise<void> {
+    const cidade = await this.cidadeRepository.buscarPorId(id);
+    if (!cidade) {
+      throw new Error('Cidade não encontrada.');
+    }
+
+    if (estadoId && cidade.estadoId !== estadoId) {
+      throw new Error('Cidade informada não pertence ao estado selecionado.');
     }
   }
 }

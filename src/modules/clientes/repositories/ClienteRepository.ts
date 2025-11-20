@@ -17,11 +17,14 @@ export class ClienteRepository implements IClienteRepository {
 
   async listar(parametros: ParametrosListagem): Promise<ListaPaginada<Cliente>> {
     const repositorio = this.obterRepositorio();
-    const consulta = repositorio.createQueryBuilder('cliente');
+    const consulta = repositorio
+      .createQueryBuilder('cliente')
+      .leftJoinAndSelect('cliente.estado', 'estado')
+      .leftJoinAndSelect('cliente.cidade', 'cidade');
 
     if (parametros.busca) {
       const texto = `%${parametros.busca}%`;
-      consulta.where('(cliente.nome ILIKE :texto OR cliente.cidade ILIKE :texto)', { texto });
+      consulta.where('(cliente.nome ILIKE :texto OR cidade.nome ILIKE :texto)', { texto });
       const documentoBusca = parametros.busca.replace(/\D/g, '');
       if (documentoBusca) {
         consulta.orWhere('cliente.documento LIKE :documento', { documento: `%${documentoBusca}%` });
@@ -49,7 +52,7 @@ export class ClienteRepository implements IClienteRepository {
   }
 
   async buscarPorId(id: number): Promise<Cliente | null> {
-    return this.obterRepositorio().findOne({ where: { id } });
+    return this.obterRepositorio().findOne({ where: { id }, relations: ['estado', 'cidade'] });
   }
 
   async buscarPorDocumento(documento: string): Promise<Cliente | null> {

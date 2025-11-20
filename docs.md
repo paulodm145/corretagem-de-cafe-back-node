@@ -328,7 +328,7 @@ Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos list
 > Todo cliente possui o campo booleano `ativo` (padrão `true`). Utilize a rota `PATCH /clientes/{id}/status` para ativar/desativar sem alterar os demais dados cadastrais.
 
 ##### GET `/clientes`
-- **Descrição:** Lista os clientes do tenant aplicando paginação, ordenação (`nome`, `documento` ou `createdAt`) e busca textual por nome, cidade ou documento.
+- **Descrição:** Lista os clientes do tenant aplicando paginação, ordenação (`nome`, `documento` ou `createdAt`) e busca textual por nome, cidade ou documento (cidade buscada pelo cadastro referenciado).
 - **Parâmetros de query:** segue o [padrão de paginação](#conven%C3%A7%C3%A3o-de-pagina%C3%A7%C3%A3o-e-busca).
 
 ##### GET `/clientes/{id}`
@@ -351,8 +351,8 @@ Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos list
     "numero": "100",
     "complemento": "Sala 2",
     "bairro": "Centro",
-    "uf": "SP",
-    "cidade": "São Paulo",
+    "estadoId": 35,
+    "cidadeId": 3550308,
     "email": "contato@exemplo.com",
     "telefone": "11999999999",
     "observacao": "Cliente estratégico",
@@ -364,6 +364,7 @@ Cadastro dos compradores/produtores vinculados aos tenants. Todos os campos list
   - `dataNascimento` deve ser uma data válida (string ISO ou objeto Date).
   - `cep` e `telefone` aceitam qualquer formatação, mas são normalizados para dígitos.
   - `email`, `inscricaoEstadual`, `complemento`, `observacao` e `numeroCar` são opcionais.
+  - Informe sempre `estadoId` e `cidadeId` apontando para registros existentes nas tabelas `estados` e `cidades`; a cidade informada deve pertencer ao estado escolhido.
 
 ##### PUT `/clientes/{id}`
 - **Descrição:** Atualiza um cliente existente. Qualquer combinação dos campos do POST é aceita, desde que ao menos um campo seja enviado.

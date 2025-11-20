@@ -4,6 +4,11 @@ import { Cidade } from '../entities/Cidade';
 import { ICidadeRepository } from './ICidadeRepository';
 
 export class CidadeRepository implements ICidadeRepository {
+  async buscarPorId(id: number): Promise<Cidade | null> {
+    const repositorio = this.obterRepositorio();
+    return repositorio.findOne({ where: { id } });
+  }
+
   async findByUf(uf: string): Promise<Cidade[]> {
     const siglaEstado = uf.trim().toUpperCase();
     const repositorio = this.obterRepositorio();
