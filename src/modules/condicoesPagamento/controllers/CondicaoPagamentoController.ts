@@ -25,16 +25,6 @@ export class CondicaoPagamentoController {
     }
   };
 
-  listarPorFormaPagamento = async (request: Request, response: Response): Promise<Response> => {
-    try {
-      const formaPagamentoId = condicaoPagamentoService.validarId(request.params.formaPagamentoId);
-      const condicoes = await condicaoPagamentoService.listarPorFormaPagamento(formaPagamentoId);
-      return response.json(condicoes);
-    } catch (erro) {
-      return responderComErroPadrao(response, erro);
-    }
-  };
-
   criar = async (request: Request, response: Response): Promise<Response> => {
     try {
       const condicao = await condicaoPagamentoService.criar(request.body);

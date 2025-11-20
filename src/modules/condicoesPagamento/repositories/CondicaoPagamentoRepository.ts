@@ -16,13 +16,6 @@ export class CondicaoPagamentoRepository implements ICondicaoPagamentoRepository
     return this.obterRepositorio().findOne({ where: { id } });
   }
 
-  listarPorFormaPagamento(formaPagamentoId: number): Promise<CondicaoPagamento[]> {
-    return this.obterRepositorio().find({
-      where: { formaPagamentoId },
-      order: { descricao: 'ASC' },
-    });
-  }
-
   async criar(dados: Partial<CondicaoPagamento>): Promise<CondicaoPagamento> {
     const repositorio = this.obterRepositorio();
     const condicao = repositorio.create(dados);

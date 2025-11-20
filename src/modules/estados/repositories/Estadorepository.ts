@@ -18,4 +18,9 @@ export class EstadoRepository implements IEstadoRepository {
     const repositorio = this.obterRepositorio();
     return repositorio.find();
   }
+
+  async findById(id: number): Promise<Estado | null> {
+    const repositorio = this.obterRepositorio();
+    return repositorio.findOne({ where: { id } });
+  }
 }

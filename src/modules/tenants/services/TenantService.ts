@@ -19,6 +19,7 @@ import { garantirUsuarioPadrao } from '../../usuarios/seeders/usuarioPadraoSeede
 import { garantirTiposSacariaPadrao } from '../../tiposSacaria/seeders/tiposSacariaPadraoSeeder';
 import { garantirFormasPagamentoPadrao } from '../../formasPagamento/seeders/formasPagamentoSeeder';
 import { garantirCondicoesPagamentoPadrao } from '../../condicoesPagamento/seeders/condicoesPagamentoSeeder';
+import { garantirDadosEmpresaPadrao } from '../../dadosEmpresa/seeders/dadosEmpresaSeeder';
 
 const TAMANHO_MAXIMO_IDENTIFICADOR = 63; // limite do PostgreSQL
 
@@ -358,6 +359,7 @@ export class TenantService {
     await garantirTiposSacariaPadrao(dataSourceTenant);
     await garantirFormasPagamentoPadrao(dataSourceTenant);
     await garantirCondicoesPagamentoPadrao(dataSourceTenant);
+    await garantirDadosEmpresaPadrao(dataSourceTenant);
   }
 
   private async instalarExtensoesObrigatorias(configuracao: DetalhesCompletosBanco): Promise<void> {

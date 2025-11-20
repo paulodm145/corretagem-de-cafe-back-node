@@ -1,9 +1,11 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
 import { AtuacaoCliente } from '../../../ENUMS/atuacaoCliente';
 import { TipoCompradorCliente } from '../../../ENUMS/tipoCompradorCliente';
 import { TipoPessoaCliente } from '../../../ENUMS/tipoPessoaCliente';
 import { LocalDescarga } from '../../locaisDescarga/entities/LocalDescarga';
 import { ContaBancaria } from '../../contasBancarias/entities/ContaBancaria';
+import { Estado } from '../../estados/entities/Estado';
+import { Cidade } from '../../cidades/entities/Cidade';
 
 @Entity('clientes')
 export class Cliente {
@@ -61,11 +63,11 @@ export class Cliente {
   @Column({ name: 'bairro', type: 'varchar', length: 120 })
   bairro!: string;
 
-  @Column({ name: 'uf', type: 'char', length: 2 })
-  uf!: string;
+  @Column({ name: 'estado_id', type: 'integer' })
+  estadoId!: number;
 
-  @Column({ name: 'cidade', type: 'varchar', length: 120 })
-  cidade!: string;
+  @Column({ name: 'cidade_id', type: 'integer' })
+  cidadeId!: number;
 
   @Column({ name: 'email', type: 'varchar', length: 180, nullable: true })
   email!: string | null;
@@ -98,4 +100,12 @@ export class Cliente {
 
   @OneToMany(() => ContaBancaria, (conta) => conta.cliente)
   contasBancarias?: ContaBancaria[];
+
+  @ManyToOne(() => Estado)
+  @JoinColumn({ name: 'estado_id' })
+  estado?: Estado;
+
+  @ManyToOne(() => Cidade)
+  @JoinColumn({ name: 'cidade_id' })
+  cidade?: Cidade;
 }
