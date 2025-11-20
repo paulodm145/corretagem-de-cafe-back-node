@@ -197,6 +197,30 @@ Gerenciamento dos usuários do tenant que podem consumir a API.
 - **Descrição:** Remove um produto do tenant.
 - **Resposta 204:** Sem corpo.
 
+#### Dados da Empresa
+- **Descrição:** A tabela `dados_empresa` armazena um único registro com as informações institucionais da corretora do tenant. Ela é criada com dados fictícios no provisionamento do tenant e pode ser atualizada a qualquer momento.
+
+##### GET `/dados-empresa`
+- **Descrição:** Retorna o registro único com os dados atuais da empresa.
+
+##### PUT `/dados-empresa`
+- **Descrição:** Atualiza todas as informações da empresa.
+- **Corpo (JSON):**
+  ```json
+  {
+    "cnpj": "12345678000199",
+    "logoBase64": "iVBORw0KGgoAAAANSUhEUg...",
+    "email": "contato@empresa.com",
+    "telefone": "11999990000",
+    "endereco": "Avenida Central, 1000 - Centro, São Paulo/SP",
+    "site": "https://www.empresa.com.br"
+  }
+  ```
+- **Observações:**
+  - O campo `logoBase64` deve conter a imagem codificada em Base64.
+  - O número do CNPJ e do telefone podem ser enviados com ou sem máscara; apenas os dígitos serão armazenados.
+  - O endpoint exige autenticação padrão do tenant e sempre devolve o registro atualizado.
+
 #### CRUD de Tipos de Sacaria
 Controla os tipos de embalagens utilizados pelos embarques de café.
 

@@ -18,6 +18,7 @@ import { contaBancariaRouter } from './modules/contasBancarias/routes';
 import { formaPagamentoRouter } from './modules/formasPagamento/routes';
 import { condicaoPagamentoRouter } from './modules/condicoesPagamento/routes';
 import { vendaRouter } from './modules/vendas/routes';
+import { dadosEmpresaRouter } from './modules/dadosEmpresa/routes';
 
 config();
 
@@ -46,6 +47,7 @@ rotasProtegidas.use(contaBancariaRouter);
 rotasProtegidas.use(formaPagamentoRouter);
 rotasProtegidas.use(condicaoPagamentoRouter);
 rotasProtegidas.use(vendaRouter);
+rotasProtegidas.use(dadosEmpresaRouter);
 
 rotasTenant.use(rotasProtegidas);
 
